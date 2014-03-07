@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<canvas id="canvas" width="500" height="500" style="border: 1px solid red;"></canvas>
+	
+<script type="text/javascript" src="fabric.min.js"></script>
+<script type="text/javascript">
+        var canvas = new fabric.Canvas('canvas');
+
+        var rect = new fabric.Rect({
+            top : 100,
+            left : 100,
+            width : 60,
+            height : 70,
+            fill : 'red'
+        });
+
+        canvas.add(rect);
+
+        canvas.on('mouse:down', function (option) {
+            console.log(option);
+            if (typeof option.target != "undefined") {
+                return;
+            } else {
+                var startY = option.e.offsetY,
+                    startX = option.e.offsetX;
+
+                console.log(startX, startY);
+
+                var rect2 = new fabric.Rect({
+                    top : startY,
+                    left : startX,
+                    width : 0,
+                    height : 0,
+                    fill : 'transparent',
+                    stroke: 'red',
+                    strokewidth: 4
+                });
+
+                canvas.add(rect2);
+
+                console.log("added");
+                canvas.on('mouse:move', function (option) {
+                    var e = option.e;
+                    rect2.set('width', e.offsetX - startX);
+                    rect2.set('height', e.offsetY - startY);
+                    rect2.setCoords();
+                });
+
+
+            }
+        });
+
+        canvas.on('mouse:up', function () {
+            canvas.renderAll();
+            canvas.off('mouse:move');
+        });
+
+        var Luo = {
+_test:8,
+get test() {return this._test;},
+set test(value) {this._test = value;console.log("test changed!");}
+
+
+}
+
+Luo.test = 8;
+</script>	
+</body>
+</html>
