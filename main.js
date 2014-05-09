@@ -32,13 +32,16 @@ document.querySelector('#on').addEventListener('click', function() {
 });
 
 $(document).on('click', function(e) {
-	mouseX = e.clientX;
-	mouseY = e.clientY;
-	if ($('#temp-input').is(':visible')) {
-		$('#temp-input').hide();
-	} else {
-		$('#temp-input').show().css({left:mouseX,top:mouseY});
+	if (e.target.id != 'temp-input' && e.target.id == 'test') {
+		mouseX = e.clientX;
+		mouseY = e.clientY;
+		if(!$('#temp-input').is(':visible')) {
+			$('#temp-input').show().css({left:mouseX,top:mouseY});
+		}
+		
 	}
+	
+
 	
 });
 
@@ -51,16 +54,46 @@ function onStageClick (e) {
 	}
 }
 
-$('#temp-input').find('textarea').on('blur', function () {
+$('#temp-input').on('blur', function () {
 	console.log('dfd',$(this).val());
 	if ($(this).val() != '') {
-		var text = new createjs.Text($(this).val(), "20px Arial", "#ff7700"); 
-		text.x = stageX;
-		text.y = stageY;
-		stage.addChild(text);
-		stage.update();
+		var content = $(this).val();
+		drawText(content, stageX, stageY);
+		
+		$(this).hide().val('');
 	}
 });
+
+function drawText (content, x, y) {
+	var text = new createjs.Text(content, "20px Arial", "#ff7700"); 
+		text.x = stageX;
+		text.y = stageY;
+		text.addEventListener('mousedown', smouseDown);
+		text.addEventListener('pressmove', pressMove);
+		var hitArea = new createjs.Shape();
+		hitArea.graphics.clear().beginFill("#FFF").drawRect(0,0,text.getMeasuredWidth(), text.getMeasuredHeight());
+		text.hitArea = hitArea;
+		text.cursor = 'move';
+		text.addEventListener('mouseover', function(e) {
+			console.log('mouseover',e);
+			hoverShape = true;
+			//canvas.classList.remove('normal');
+			//document.body.style.cursor = 'move';
+			text.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
+			stage.update();
+		}, false);
+
+		text.addEventListener('mouseout', function() {
+			console.log('mouseout');
+			hoverShape = false;
+			//canvas.classList.add('normal');
+			//document.body.style.cursor = 'auto';
+			text.shadow = null;
+			stage.update();
+		}, false);
+		stage.addChild(text);
+		stage.update();
+}
 
 $('#on').trigger('click');
 $('#text').trigger('click');
