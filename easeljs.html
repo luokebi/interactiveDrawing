@@ -18,12 +18,22 @@
 		margin-top: 10px;
 	}
 
+	#temp-input {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		display: none;
+	}
+
 
 </style>
 <link rel="stylesheet" href="bootstrap.min.css">
 <body>
 <div class="container">
 	<canvas id="test" width="1000px" height="500px" class="normal"></canvas>
+	<div id="temp-input">
+		<textarea></textarea>
+	</div>
 	<div class="tools">
 		<div class="btn-group" data-toggle="buttons-radio" id="switcher">
 <button class="btn btn-primary" id="off">off</button>
@@ -38,6 +48,7 @@
 <button class="btn btn-primary" id="arrow">Arrow</button>
 <button class="btn btn-primary" id="line">Line</button>
 <button class="btn btn-primary" id="free-line">Free line</button>
+<button class="btn btn-primary" id="text">Text</button>
 </div>
 <div class="btn-group">
 <button class="btn btn-primary" id="off">Undo</button>

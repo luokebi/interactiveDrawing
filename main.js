@@ -15,6 +15,10 @@ var stage = new createjs.Stage("test");
 stage.enableMouseOver(10);
 var creating = false;
 var hoverShape = false;
+var mouseX = 0;
+var mouseY = 0;
+var stageX = 0;
+var stageY = 0;
 stage.addEventListener('stagemousedown', mouseDown, false);
 
 document.querySelector('#off').addEventListener('click', function() {
@@ -27,17 +31,51 @@ document.querySelector('#on').addEventListener('click', function() {
 	stage.addEventListener('stagemousedown', mouseDown, false);
 });
 
+$(document).on('click', function(e) {
+	mouseX = e.clientX;
+	mouseY = e.clientY;
+	if ($('#temp-input').is(':visible')) {
+		$('#temp-input').hide();
+	} else {
+		$('#temp-input').show().css({left:mouseX,top:mouseY});
+	}
+	
+});
+
+stage.addEventListener('click', onStageClick, false);
+
+function onStageClick (e) {
+	console.log(e,stage);
+	if(shapeType == 'text') {	
+		$('#temp-input').show().css({left:stage.mouseX,top:stage.mouseY});
+	}
+}
+
+$('#temp-input').find('textarea').on('blur', function () {
+	console.log('dfd',$(this).val());
+	if ($(this).val() != '') {
+		var text = new createjs.Text($(this).val(), "20px Arial", "#ff7700"); 
+		text.x = stageX;
+		text.y = stageY;
+		stage.addChild(text);
+		stage.update();
+	}
+});
+
 $('#on').trigger('click');
-$('#rect').trigger('click');
+$('#text').trigger('click');
 
 
 function mouseDown(e) {
 	console.log('stagemousedown');
+			if (shapeType == 'text') {stageX = e.stageX;stageY = e.stageY;return;}
 	if (hoverShape) {
 		return;
 	};
 	var originalX = _oX = e.stageX;
 	var originalY = _oY = e.stageY;
+
+	
 
 
 	if (shapeType == 'free-line') {
@@ -71,7 +109,8 @@ function mouseDown(e) {
 
 		container.hitArea = hitArea;
 	} else {
-		var shape = new createjs.Shape();
+
+			var shape = new createjs.Shape();
 		//shape.graphics.beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(e.stageX, e.stageY, 0, 0);
 		creating = true;
 		shape.addEventListener('mousedown', smouseDown);
@@ -86,8 +125,8 @@ function mouseDown(e) {
 		var hitArea = new createjs.Shape();
 		//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
 
-		shape.addEventListener('mouseover', function() {
-			console.log('mouseover');
+		shape.addEventListener('mouseover', function(e) {
+			console.log('mouseover',e);
 			hoverShape = true;
 			//canvas.classList.remove('normal');
 			//document.body.style.cursor = 'move';
@@ -105,6 +144,7 @@ function mouseDown(e) {
 		}, false);
 
 		shape.hitArea = hitArea;
+		
 	}
 
 
@@ -141,6 +181,9 @@ function mouseDown(e) {
 					x: e.stageX,
 					y: e.stageY
 				});
+				break;
+			case 'text':
+				
 				break;
 		}
 		//shape.graphics.clear().beginFill("rgba(0,0,0,0)").beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(originalX, originalY, e.stageX-originalX,e.stageY-originalY);
