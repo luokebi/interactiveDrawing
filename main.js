@@ -31,68 +31,104 @@ document.querySelector('#on').addEventListener('click', function() {
 	stage.addEventListener('stagemousedown', mouseDown, false);
 });
 
-$(document).on('click', function(e) {
+/*$(document).on('click', function(e) {
 	if (e.target.id != 'temp-input' && e.target.id == 'test') {
 		mouseX = e.clientX;
 		mouseY = e.clientY;
-		if(!$('#temp-input').is(':visible')) {
-			$('#temp-input').show().css({left:mouseX,top:mouseY});
+		if (!$('#temp-input').is(':visible')) {
+			$('#temp-input').show().css({
+				left: mouseX,
+				top: mouseY
+			});
 		}
-		
-	}
-	
 
-	
+	}
+
+
+
+});*/
+
+$(canvas).on('click', function(e) {
+	if (!$('#temp-input').is(':visible')) {
+		mouseX = e.clientX;
+		mouseY = e.clientY;
+		$('#temp-input').show().css({
+			left: mouseX,
+			top: mouseY
+		});
+	} else {
+		if ($('#temp-input').val() != '') {
+			var content = $('#temp-input').val();
+			drawText(content, stageX, stageY);
+
+			$('#temp-input').hide().val('');
+		} else {
+			$('#temp-input').hide();
+		}
+	}
 });
 
 stage.addEventListener('click', onStageClick, false);
 
-function onStageClick (e) {
-	console.log(e,stage);
-	if(shapeType == 'text') {	
-		$('#temp-input').show().css({left:stage.mouseX,top:stage.mouseY});
+function onStageClick(e) {
+	console.log(e, stage);
+	if (shapeType == 'text') {
+		$('#temp-input').show().css({
+			left: stage.mouseX,
+			top: stage.mouseY
+		});
 	}
 }
 
-$('#temp-input').on('blur', function () {
-	console.log('dfd',$(this).val());
+/*$('#temp-input').on('blur', function() {
+	console.log('dfd', $(this).val());
 	if ($(this).val() != '') {
 		var content = $(this).val();
 		drawText(content, stageX, stageY);
-		
+
 		$(this).hide().val('');
 	}
-});
+});*/
 
-function drawText (content, x, y) {
-	var text = new createjs.Text(content, "20px Arial", "#ff7700"); 
-		text.x = stageX;
-		text.y = stageY;
-		text.addEventListener('mousedown', smouseDown);
-		text.addEventListener('pressmove', pressMove);
-		var hitArea = new createjs.Shape();
-		hitArea.graphics.clear().beginFill("#FFF").drawRect(0,0,text.getMeasuredWidth(), text.getMeasuredHeight());
-		text.hitArea = hitArea;
-		text.cursor = 'move';
-		text.addEventListener('mouseover', function(e) {
-			console.log('mouseover',e);
-			hoverShape = true;
-			//canvas.classList.remove('normal');
-			//document.body.style.cursor = 'move';
-			text.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
-			stage.update();
-		}, false);
-
-		text.addEventListener('mouseout', function() {
-			console.log('mouseout');
-			hoverShape = false;
-			//canvas.classList.add('normal');
-			//document.body.style.cursor = 'auto';
-			text.shadow = null;
-			stage.update();
-		}, false);
-		stage.addChild(text);
+function drawText(content, x, y) {
+	var text = new createjs.Text(content, "20px Arial", "#ff7700");
+	text.x = stageX;
+	text.y = stageY;
+	text.addEventListener('mousedown', smouseDown);
+	text.addEventListener('pressmove', pressMove);
+	var hitArea = new createjs.Shape();
+	hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, text.getMeasuredWidth(), text.getMeasuredHeight());
+	text.hitArea = hitArea;
+	text.cursor = 'move';
+	text.addEventListener('mouseover', function(e) {
+		console.log('mouseover', e);
+		hoverShape = true;
+		//canvas.classList.remove('normal');
+		//document.body.style.cursor = 'move';
+		text.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
 		stage.update();
+	}, false);
+
+	text.addEventListener('mouseout', function() {
+		console.log('mouseout');
+		hoverShape = false;
+		//canvas.classList.add('normal');
+		//document.body.style.cursor = 'auto';
+		text.shadow = null;
+		stage.update();
+	}, false);
+
+	text.addEventListener('dblclick', function () {
+		var contnet = text.text = "hoverShape";
+		//console.log(text.graphics, text)
+		//text.graphics.clear();
+		$('#temp-input').val(contnet).show().css({
+			left: stage.mouseX,
+			top: stage.mouseY
+		});
+	}, false);
+	stage.addChild(text);
+	stage.update();
 }
 
 $('#on').trigger('click');
@@ -101,14 +137,19 @@ $('#text').trigger('click');
 
 function mouseDown(e) {
 	console.log('stagemousedown');
-			if (shapeType == 'text') {stageX = e.stageX;stageY = e.stageY;return;}
+	if (shapeType == 'text') {
+		if (!$('#temp-input').is(':visible')) {
+			stageX = e.stageX;
+			stageY = e.stageY;
+			return;
+		}
+	}
 	if (hoverShape) {
 		return;
 	};
 	var originalX = _oX = e.stageX;
 	var originalY = _oY = e.stageY;
 
-	
 
 
 	if (shapeType == 'free-line') {
@@ -143,7 +184,7 @@ function mouseDown(e) {
 		container.hitArea = hitArea;
 	} else {
 
-			var shape = new createjs.Shape();
+		var shape = new createjs.Shape();
 		//shape.graphics.beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(e.stageX, e.stageY, 0, 0);
 		creating = true;
 		shape.addEventListener('mousedown', smouseDown);
@@ -159,7 +200,7 @@ function mouseDown(e) {
 		//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
 
 		shape.addEventListener('mouseover', function(e) {
-			console.log('mouseover',e);
+			console.log('mouseover', e);
 			hoverShape = true;
 			//canvas.classList.remove('normal');
 			//document.body.style.cursor = 'move';
@@ -177,7 +218,7 @@ function mouseDown(e) {
 		}, false);
 
 		shape.hitArea = hitArea;
-		
+
 	}
 
 
@@ -216,7 +257,7 @@ function mouseDown(e) {
 				});
 				break;
 			case 'text':
-				
+
 				break;
 		}
 		//shape.graphics.clear().beginFill("rgba(0,0,0,0)").beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(originalX, originalY, e.stageX-originalX,e.stageY-originalY);
