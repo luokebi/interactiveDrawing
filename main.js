@@ -4,10 +4,35 @@ var elements = [];
 
 $('#actions').find('.btn').on('click', function() {
 	shapeType = $(this).siblings('.btn').removeClass('active').end().addClass('active').attr('id');
+	if (shapeType == 'text') {
+		$(canvas).on('click', function(e) {
+			if (modifyText == true) {return;}
+			if (!$('#temp-input').is(':visible')) {
+				mouseX = e.clientX;
+				mouseY = e.clientY;
+				$('#temp-input').show().css({
+					left: stage.mouseX,
+					top: stage.mouseY
+				}).focus();
+			} else {
+				if ($('#temp-input').val() != '') {
+					var content = $('#temp-input').val();
+					drawText(content, stageX, stageY);
+
+					$('#temp-input').hide().val('');
+				} else {
+					$('#temp-input').hide();
+				}
+			}
+		});
+	} else {
+		$(canvas).off('click');
+	}
 });
 
 $('#switcher').find('.btn').on('click', function() {
 	$(this).siblings('.btn').removeClass('active').end().addClass('active');
+
 });
 
 var canvas = document.querySelector('#test');
@@ -15,6 +40,7 @@ var stage = new createjs.Stage("test");
 stage.enableMouseOver(10);
 var creating = false;
 var hoverShape = false;
+var modifyText = false;
 var mouseX = 0;
 var mouseY = 0;
 var stageX = 0;
@@ -31,42 +57,7 @@ document.querySelector('#on').addEventListener('click', function() {
 	stage.addEventListener('stagemousedown', mouseDown, false);
 });
 
-/*$(document).on('click', function(e) {
-	if (e.target.id != 'temp-input' && e.target.id == 'test') {
-		mouseX = e.clientX;
-		mouseY = e.clientY;
-		if (!$('#temp-input').is(':visible')) {
-			$('#temp-input').show().css({
-				left: mouseX,
-				top: mouseY
-			});
-		}
 
-	}
-
-
-
-});*/
-
-$(canvas).on('click', function(e) {
-	if (!$('#temp-input').is(':visible')) {
-		mouseX = e.clientX;
-		mouseY = e.clientY;
-		$('#temp-input').show().css({
-			left: mouseX,
-			top: mouseY
-		});
-	} else {
-		if ($('#temp-input').val() != '') {
-			var content = $('#temp-input').val();
-			drawText(content, stageX, stageY);
-
-			$('#temp-input').hide().val('');
-		} else {
-			$('#temp-input').hide();
-		}
-	}
-});
 
 stage.addEventListener('click', onStageClick, false);
 
@@ -118,13 +109,21 @@ function drawText(content, x, y) {
 		stage.update();
 	}, false);
 
-	text.addEventListener('dblclick', function () {
-		var contnet = text.text = "hoverShape";
-		//console.log(text.graphics, text)
-		//text.graphics.clear();
+	text.addEventListener('dblclick', function(e) {
+		var contnet = text.text;
+		modifyText = true;
+		console.log(text);
 		$('#temp-input').val(contnet).show().css({
-			left: stage.mouseX,
-			top: stage.mouseY
+			left: e.stageX,
+			top: e.stageY
+		})
+		.focus()
+		.on('blur', function () {
+			text.text = $(this).val();
+			hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, text.getMeasuredWidth(), text.getMeasuredHeight());
+			modifyText = false;
+			$(this).val('').off('blur');
+			stage.update();
 		});
 	}, false);
 	stage.addChild(text);
@@ -132,7 +131,7 @@ function drawText(content, x, y) {
 }
 
 $('#on').trigger('click');
-$('#text').trigger('click');
+$('#free-arrow').trigger('click');
 
 
 function mouseDown(e) {
@@ -152,33 +151,34 @@ function mouseDown(e) {
 	var originalY = _oY = e.stageY;
 
 
-		var shape = new createjs.Shape();
-		//shape.graphics.beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(e.stageX, e.stageY, 0, 0);
-		creating = true;
-		shape.addEventListener('mousedown', smouseDown);
-		shape.addEventListener('pressmove', pressMove);
-		stage.addChild(shape);
-		shape.cursor = 'move';
-		shape._points = [];
+	var shape = new createjs.Shape();
+	//shape.graphics.beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(e.stageX, e.stageY, 0, 0);
+	creating = true;
+	shape.addEventListener('mousedown', smouseDown);
+	shape.addEventListener('pressmove', pressMove);
+	stage.addChild(shape);
+	shape.cursor = 'move';
+	shape._points = [];
 
-		var hitArea = new createjs.Shape();
-		//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
+	var hitArea = new createjs.Shape();
+	//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
 
-		shape.addEventListener('mouseover', function(e) {
-			console.log('mouseover', e);
-			hoverShape = true;
-			shape.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
-			stage.update();
-		}, false);
+	shape.addEventListener('mouseover', function(e) {
+		if (creating) {return;}
+		console.log('mouseover', e);
+		hoverShape = true;
+		shape.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
+		stage.update();
+	}, false);
 
-		shape.addEventListener('mouseout', function() {
-			console.log('mouseout');
-			hoverShape = false;
-			shape.shadow = null;
-			stage.update();
-		}, false);
+	shape.addEventListener('mouseout', function() {
+		console.log('mouseout');
+		hoverShape = false;
+		shape.shadow = null;
+		stage.update();
+	}, false);
 
-		shape.hitArea = hitArea;
+	shape.hitArea = hitArea;
 
 
 
@@ -203,54 +203,83 @@ function mouseDown(e) {
 				break;
 			case 'arrow':
 				var angle = Math.atan2(e.stageY - originalY, e.stageX - originalX) * 180 / Math.PI;
-				shape.graphics.clear().setStrokeStyle(8, "round", "round").beginStroke("#000").lineTo(originalX, originalY).lineTo(e.stageX, e.stageY).setStrokeStyle(8).beginStroke("#000").beginFill("#000").endStroke().drawPolyStar(e.stageX, e.stageY, 8 * 1.5, 3, 0.5, angle);;
+				shape.graphics.clear().setStrokeStyle(8, "round", "round").beginStroke("#000").lineTo(originalX, originalY).lineTo(e.stageX, e.stageY).setStrokeStyle(8).beginStroke("#000").beginFill("#000").endStroke().drawPolyStar(e.stageX, e.stageY, 8 * 1.5, 3, 0.5, angle);
+				break;
+			case 'free-arrow':
+				shape.graphics.clear().setStrokeStyle(8, "round", "round").beginStroke("#000");
+				//shape.graphics/*.moveTo(_oX, _oY)*/.lineTo(e.stageX, e.stageY);
+				shape._points.push({
+					x: e.stageX,
+					y: e.stageY
+				});
+				var angle = Math.atan2(e.stageY - _oX, e.stageX - _oY) * 180 / Math.PI;
+				_oX = e.stageX;
+				_oY = e.stageY;
+				//console.log(angle);
+
+				
+				for (var i = 0;i < shape._points.length; i++) {
+					var p = shape._points[i];
+					
+					shape.graphics.lineTo(p.x, p.y);
+				}
+
+				shape.graphics.setStrokeStyle(8).drawPolyStar(e.stageX, e.stageY, 8 * 1.5, 3, 0.5, angle);
 				break;
 			case 'free-line':
-				shape._points.push({x:e.stageX,y:e.stageY});
-				shape.graphics/*.clear()*/.setStrokeStyle(8, "round", "round").beginStroke("#000");
-					shape.graphics.lineTo().moveTo(_oX, _oY).lineTo(e.stageX,e.stageY);
-					shape._points.push({x:e.stageX,y:e.stageY});
-					_oX = e.stageX;
-					_oY = e.stageY
+				shape.graphics.clear().setStrokeStyle(8, "round", "round").beginStroke("#000");
+				//shape.graphics/*.moveTo(_oX, _oY)*/.lineTo(e.stageX, e.stageY);
+				shape._points.push({
+					x: e.stageX,
+					y: e.stageY
+				});
+				_oX = e.stageX;
+				_oY = e.stageY
+
+				for (var i = 0;i < shape._points.length; i++) {
+					var p = shape._points[i];
+					
+					shape.graphics.lineTo(p.x, p.y);
+				}				
 				break;
 			case 'text':
 
 				break;
 		}
-		
+
 		if (shapeType != 'free-line') {
 			shape.setBounds(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
 			shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
 		} else {
 			var max = {
-					x: 0,
-					y: 0
-				};
+				x: 0,
+				y: 0
+			};
 
-				var min = {
-					x: 99999,
-					y: 99999
-				};
+			var min = {
+				x: 99999,
+				y: 99999
+			};
 
-				for (var i = 0, n = shape._points.length; i < n; i++) {
-					var p = shape._points[i];
-					if (p.x > max.x) {
-						max.x = p.x;
-					}
-					if (p.y > max.y) {
-						max.y = p.y;
-					}
-					if (p.x < min.x) {
-						min.x = p.x;
-					}
-					if (p.y < min.y) {
-						min.y = p.y;
-					}
+			for (var i = 0, n = shape._points.length; i < n; i++) {
+				var p = shape._points[i];
+				if (p.x > max.x) {
+					max.x = p.x;
 				}
+				if (p.y > max.y) {
+					max.y = p.y;
+				}
+				if (p.x < min.x) {
+					min.x = p.x;
+				}
+				if (p.y < min.y) {
+					min.y = p.y;
+				}
+			}
 
 
-				shape.setBounds(min.x, min.y, max.x - min.x, max.y - min.y);
-				shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(min.x, min.y, max.x - min.x, max.y - min.y);
+			shape.setBounds(min.x, min.y, max.x - min.x, max.y - min.y);
+			shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(min.x, min.y, max.x - min.x, max.y - min.y);
 		}
 
 		stage.update();
