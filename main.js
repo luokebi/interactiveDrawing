@@ -271,7 +271,7 @@ function drawText(content, x, y) {
 }
 
 $('#on').trigger('click');
-$('#blur').trigger('click');
+$('#rect').trigger('click');
 
 
 function mouseDown(e) {
@@ -303,7 +303,7 @@ function mouseDown(e) {
 
 	function insert() {
 		
-		var blurFilter = new createjs.BlurFilter(7, 7, 1);
+		var blurFilter = new createjs.BlurFilter(10, 10, 1);
 		bitmap.filters = [blurFilter];
 		bitmap.cursor = 'move';
 
@@ -360,6 +360,9 @@ function mouseDown(e) {
 	stage.addChild(shape);
 	shape.cursor = 'move';
 	shape._points = [];
+	shape._handlers = {};
+
+	shape._type = shapeType;
 
 	var hitArea = new createjs.Shape();
 	//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
@@ -515,21 +518,99 @@ function mouseDown(e) {
 
 function smouseDown(e) {
 	var z = e.target;
+	console.log("smouseDown", e);
+	z._startX = e.stageX;
+	z._startY = e.stageY;
 	var offsetX = z.x - e.stageX;
 	var offsetY = z.y - e.stageY;
 	z.offset = {
 		x: offsetX,
 		y: offsetY
 	};
+
+	z.prev_bounds = z.getBounds();
+
+	if (e.target._type == 'rect') {
+			drawOutline(z);
+	}
 }
 
 function pressMove(e) {
 	if (creating) {
 		return;
 	}
-	//console.log('pressmove');
-	var z = e.target;
+	var z = e.currentTarget;
+	var bounds = z.prev_bounds;
+	var moveX = e.stageX - z._startX;
+	var moveY = e.stageY - z._startY;
+	console.log('pressmove',bounds);
+	console.log(moveX);
+	
 	z.x = e.stageX + z.offset.x;
 	z.y = e.stageY + z.offset.y;
+	z.setBounds(bounds.x + moveX, bounds.y + moveY, bounds.width, bounds.height);
+	
+	//shape.setBounds(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
+	//shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
 	stage.update();
+}
+
+
+function drawOutline(shape) {
+	var bounds = shape.getBounds(),
+		x = bounds.x,
+		y = bounds.y,
+		width = bounds.width,
+		height = bounds.height,
+		handlers = [
+		{
+			name: 'lt',
+			cursor: 'nwse-resize',
+			x : x,
+			y: y
+		},
+		{
+			name: 'rt',
+			cursor: 'nwse-resize',
+			x : x + width,
+			y: y
+		},
+		{
+			name: 'lb',
+			cursor: 'nwse-resize',
+			x : x,
+			y: y + height
+		},
+		{
+			name: 'rb',
+			cursor: 'nwse-resize',
+			x : x + width,
+			y: y + height
+		}
+		];
+
+		$.each(handlers, function (i, h) {
+			var r = shape._handlers[h.name];
+			if (!r) {
+				var r = new createjs.Shape();
+				r._type = 'handler';
+				r.name = h.name;
+				r.cursor = h.cursor;
+				shape._handlers[h.name] = r;
+			}
+
+			r.center = {
+				x: h.x,
+				y: h.y
+			};
+
+			r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 8);
+			stage.addChild(r);
+			
+
+		});
+
+		stage.update();
+
+
 }
