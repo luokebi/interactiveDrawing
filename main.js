@@ -357,6 +357,10 @@ function mouseDown(e) {
 	creating = true;
 	shape.addEventListener('mousedown', smouseDown);
 	shape.addEventListener('pressmove', pressMove);
+	/*shape.addEventListener('mouseup', function() {
+		delete shape.x;
+		delete shape.y;
+	});*/
 	stage.addChild(shape);
 	shape.cursor = 'move';
 	shape._points = [];
@@ -527,8 +531,9 @@ function smouseDown(e) {
 		x: offsetX,
 		y: offsetY
 	};
+	$('#off').trigger('click');
 
-	z.prev_bounds = z.getBounds();
+	z.previous_bounds = z.getBounds().clone();
 
 	if (e.target._type == 'rect') {
 			drawOutline(z);
@@ -540,24 +545,28 @@ function pressMove(e) {
 		return;
 	}
 	var z = e.currentTarget;
-	var bounds = z.prev_bounds;
+	var bounds = z.previous_bounds;
 	var moveX = e.stageX - z._startX;
 	var moveY = e.stageY - z._startY;
-	console.log('pressmove',bounds);
-	console.log(moveX);
+	//console.log('pressmove',bounds);
+	//console.log(moveX);
 	
 	z.x = e.stageX + z.offset.x;
 	z.y = e.stageY + z.offset.y;
 	z.setBounds(bounds.x + moveX, bounds.y + moveY, bounds.width, bounds.height);
+	//console.log(bounds.x, moveX, z.getBounds().clone());
 	
+	drawOutline(z);
 	//shape.setBounds(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
 	//shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
-	stage.update();
+	//stage.update();
+	
 }
 
 
 function drawOutline(shape) {
-	var bounds = shape.getBounds(),
+	//console.log(shape);
+	var bounds = shape.getBounds().clone(),
 		x = bounds.x,
 		y = bounds.y,
 		width = bounds.width,
@@ -597,6 +606,15 @@ function drawOutline(shape) {
 				r.name = h.name;
 				r.cursor = h.cursor;
 				shape._handlers[h.name] = r;
+				if (r.name == 'rb') {
+					r.on('pressmove', function (e) {
+						var bounds = shape.getBounds();
+						rePaint(shape, bounds.x, bounds.y, e.stageX - bounds.x, e.stageY - bounds.y);
+						drawOutline(shape);
+					});
+				}
+
+				stage.addChild(r);
 			}
 
 			r.center = {
@@ -605,7 +623,7 @@ function drawOutline(shape) {
 			};
 
 			r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 8);
-			stage.addChild(r);
+			
 			
 
 		});
@@ -613,4 +631,12 @@ function drawOutline(shape) {
 		stage.update();
 
 
+}
+
+function rePaint(shape, x, y, w, h) {
+	hoverShape = true;
+	shape.graphics.clear().beginStroke("#000").setStrokeStyle(8, "round").drawRect(x - shape.x, y - shape.y, w, h);
+	shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(x - shape.x, y - shape.y, w, h);
+	shape.setBounds(x, y, w, h);
+	stage.update();
 }
