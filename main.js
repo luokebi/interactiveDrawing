@@ -1,6 +1,9 @@
 var shapeType = null;
+var lastShape = null;
 
 var elements = [];
+
+var shapes = ['rect','ellipse','r-rect'];
 
 $('#actions').find('.btn').on('click', function() {
 	shapeType = $(this).siblings('.btn').removeClass('active').end().addClass('active').attr('id');
@@ -112,60 +115,6 @@ $('#insert-svg').on('click', function() {
 
 });
 
-/*$('#blur').on('click', function() {
-	var image = new Image();
-	image.src = "assets/test.png";
-	image.crossOrigin = "Anonymous";
-	image.onload = insert;
-
-	function insert() {
-		var bitmap = new createjs.Bitmap(image);
-		var blurFilter = new createjs.BlurFilter(6, 6, 1);
-		bitmap.filters = [blurFilter];
-
-		//bitmap.scaleX = 0.5;
-		//bitmap.scaleY = 0.5;
-		bitmap.cursor = 'move';
-		//var bounds = blurFilter.getBounds();
-		//console.log(bounds);
-		var shape = new createjs.Shape();
-		shape.graphics.drawRect(100, 100, 100, 100);
-		bitmap.sourceRect = new createjs.Rectangle(100, 100, 100, 100);
-		bitmap.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
-		bitmap.x = 100;
-		bitmap.y = 100;
-		bitmap.cache(0, 0, 100, 100);
-		bitmap.addEventListener('mousedown', smouseDown);
-		bitmap.addEventListener('pressmove', function(e) {
-			if (creating) {
-				return;
-			}
-			var z = e.target;
-			z.x = e.stageX + z.offset.x;
-			z.y = e.stageY + z.offset.y;
-			z.sourceRect = new createjs.Rectangle(z.x, z.y, 100, 100);
-			z.cache(0,0,100,100);
-			stage.update();
-		});
-		bitmap.addEventListener('mouseover', function(e) {
-			if (creating) {
-				return;
-			}
-			console.log('mouseover', e);
-			hoverShape = true;
-			stage.update();
-		}, false);
-
-		bitmap.addEventListener('mouseout', function() {
-			console.log('mouseout');
-			hoverShape = false;
-			stage.update();
-		}, false);
-
-		stage.addChild(bitmap);
-		stage.update();
-	}
-});*/
 
 $('#switcher').find('.btn').on('click', function() {
 	$(this).siblings('.btn').removeClass('active').end().addClass('active');
@@ -189,6 +138,10 @@ image.src = "assets/test.png";
 image.crossOrigin = "Anonymous";
 image.onload = function() {
 	var bitmap = new createjs.Bitmap(image);
+	bitmap.on('mousedown', function(e) {
+		console.log('image mous', e);
+		removeOutline(lastShape);
+	});
 	stage.addChild(bitmap);
 	stage.update();
 
@@ -275,7 +228,8 @@ $('#rect').trigger('click');
 
 
 function mouseDown(e) {
-	console.log('stagemousedown');
+	console.log('stagemousedown', e);
+
 	if (shapeType == 'text') {
 		if (!$('#temp-input').is(':visible')) {
 			stageX = e.stageX;
@@ -285,6 +239,7 @@ function mouseDown(e) {
 	}
 
 	if (hoverShape) {
+
 		return;
 	};
 
@@ -294,102 +249,106 @@ function mouseDown(e) {
 	if (shapeType == 'blur') {
 		creating = true;
 		var image = new Image();
-	image.src = "assets/test.png";
-	image.crossOrigin = "Anonymous";
+		image.src = "assets/test.png";
+		image.crossOrigin = "Anonymous";
 
-	image.onload = insert;
+		image.onload = insert;
 
-	var bitmap = new createjs.Bitmap(image);
+		var bitmap = new createjs.Bitmap(image);
 
-	function insert() {
-		
-		var blurFilter = new createjs.BlurFilter(10, 10, 1);
-		bitmap.filters = [blurFilter];
-		bitmap.cursor = 'move';
+		function insert() {
+
+			var blurFilter = new createjs.BlurFilter(10, 10, 1);
+			bitmap.filters = [blurFilter];
+			bitmap.cursor = 'move';
 
 
-		/*bitmap.sourceRect = new createjs.Rectangle(ori, 100, 100, 100);
+			/*bitmap.sourceRect = new createjs.Rectangle(ori, 100, 100, 100);
 		bitmap.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
 		bitmap.x = 100;
 		bitmap.y = 100;
 		bitmap.cache(0, 0, 100, 100);*/
-		bitmap.x = originalX;
-		bitmap.y = originalY;
-		bitmap.cache(0, 0, 0, 0);
-		bitmap.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
-		bitmap.addEventListener('mousedown', smouseDown);
-		bitmap.addEventListener('pressmove', function(e) {
-			if (creating) {
-				return;
-			}
-			var z = e.target;
-			z.x = e.stageX + z.offset.x;
-			z.y = e.stageY + z.offset.y;
-			z.sourceRect = new createjs.Rectangle(z.x, z.y, z.width, z.height);
-			z.cache(0,0,z.width,z.height);
+			bitmap.x = originalX;
+			bitmap.y = originalY;
+			bitmap.cache(0, 0, 0, 0);
+			bitmap.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
+			bitmap.addEventListener('mousedown', smouseDown);
+			bitmap.addEventListener('pressmove', function(e) {
+				if (creating) {
+					return;
+				}
+				var z = e.target;
+				z.x = e.stageX + z.offset.x;
+				z.y = e.stageY + z.offset.y;
+				z.sourceRect = new createjs.Rectangle(z.x, z.y, z.width, z.height);
+				z.cache(0, 0, z.width, z.height);
+				stage.update();
+			});
+			bitmap.addEventListener('mouseover', function(e) {
+				if (creating) {
+					return;
+				}
+				console.log('mouseover', e);
+				hoverShape = true;
+				bitmap.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
+				stage.update();
+			}, false);
+
+			bitmap.addEventListener('mouseout', function() {
+				console.log('mouseout');
+				hoverShape = false;
+				bitmap.shadow = null;
+				stage.update();
+			}, false);
+
+			stage.addChild(bitmap);
 			stage.update();
-		});
-		bitmap.addEventListener('mouseover', function(e) {
+		}
+
+	} else {
+
+		var shape = new createjs.Shape();
+		//shape.graphics.beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(e.stageX, e.stageY, 0, 0);
+		creating = true;
+		shape.addEventListener('mousedown', smouseDown);
+		shape.addEventListener('pressmove', pressMove);
+		/*shape.addEventListener('mouseup', function() {
+		delete shape.x;
+		delete shape.y;
+	});*/
+		stage.addChild(shape);
+		shape.cursor = 'move';
+		shape._points = [];
+		shape._handlers = {};
+
+		shape._type = shapeType;
+
+		
+		//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
+
+		shape.addEventListener('mouseover', function(e) {
 			if (creating) {
 				return;
 			}
 			console.log('mouseover', e);
 			hoverShape = true;
-			bitmap.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
+			shape.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
 			stage.update();
 		}, false);
 
-		bitmap.addEventListener('mouseout', function() {
+		shape.addEventListener('mouseout', function() {
 			console.log('mouseout');
 			hoverShape = false;
-			bitmap.shadow = null;
+			shape.shadow = null;
 			stage.update();
 		}, false);
 
-		stage.addChild(bitmap);
-		stage.update();
-	}
-
-	} else {
-
-	var shape = new createjs.Shape();
-	//shape.graphics.beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(e.stageX, e.stageY, 0, 0);
-	creating = true;
-	shape.addEventListener('mousedown', smouseDown);
-	shape.addEventListener('pressmove', pressMove);
-	/*shape.addEventListener('mouseup', function() {
-		delete shape.x;
-		delete shape.y;
-	});*/
-	stage.addChild(shape);
-	shape.cursor = 'move';
-	shape._points = [];
-	shape._handlers = {};
-
-	shape._type = shapeType;
-
-	var hitArea = new createjs.Shape();
-	//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
-
-	shape.addEventListener('mouseover', function(e) {
-		if (creating) {
-			return;
+		if ($.inArray(shapeType, shapes) != -1) {
+			var hitArea = new createjs.Shape();
+			shape.hitArea = hitArea;
 		}
-		console.log('mouseover', e);
-		hoverShape = true;
-		shape.shadow = new createjs.Shadow("#FF1414", 0, 0, 10);
-		stage.update();
-	}, false);
-
-	shape.addEventListener('mouseout', function() {
-		console.log('mouseout');
-		hoverShape = false;
-		shape.shadow = null;
-		stage.update();
-	}, false);
-
-	shape.hitArea = hitArea;
-}
+		
+	}
 
 
 
@@ -411,11 +370,22 @@ function mouseDown(e) {
 				break;
 			case 'line':
 				shape.graphics.clear().setStrokeStyle(8, "round").beginStroke("#000").moveTo(originalX, originalY).lineTo(e.stageX, e.stageY);
+				shape.linePoint = {
+					startX: originalX,
+					startY: originalY,
+					endX: e.stageX,
+					endY: e.stageY
+				};
 				break;
 			case 'arrow':
 				var angle = Math.atan2(e.stageY - originalY, e.stageX - originalX) * 180 / Math.PI;
-				console.log(e.stageY, _oY, e.stageX, _oX, angle);
 				shape.graphics.clear().setStrokeStyle(8, "round", "round").beginStroke("#000").lineTo(originalX, originalY).lineTo(e.stageX, e.stageY).setStrokeStyle(8).beginStroke("#000").beginFill("#000").endStroke().drawPolyStar(e.stageX, e.stageY, 8 * 1.5, 3, 0.5, angle);
+				shape.linePoint = {
+					startX: originalX,
+					startY: originalY,
+					endX: e.stageX,
+					endY: e.stageY
+				};
 				break;
 			case 'free-arrow':
 				shape.graphics.clear().setStrokeStyle(8, "round", "round").beginStroke("#000");
@@ -465,9 +435,14 @@ function mouseDown(e) {
 		}
 
 		if (shapeType != 'free-line' && shapeType != 'free-arrow') {
-			if (shapeType == 'blur'){return;}
+			if (shapeType == 'blur') {
+				return;
+			}
 			shape.setBounds(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
-			shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
+			if ($.inArray(shapeType, shapes) != -1) {
+				shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
+			}
+			
 		} else {
 
 			var max = {
@@ -497,8 +472,8 @@ function mouseDown(e) {
 			}
 
 
-			shape.setBounds(min.x, min.y, max.x - min.x, max.y - min.y);
-			shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(min.x, min.y, max.x - min.x, max.y - min.y);
+			shape.setBounds(0,0,0,0);
+			//shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(min.x, min.y, max.x - min.x, max.y - min.y);
 		}
 
 		stage.update();
@@ -513,7 +488,7 @@ function mouseDown(e) {
 			if (bitmap) {
 				bitmap.shadow = null;
 			}
-			
+
 		}
 
 	}, false);
@@ -531,13 +506,17 @@ function smouseDown(e) {
 		x: offsetX,
 		y: offsetY
 	};
-	$('#off').trigger('click');
+	//$('#off').trigger('click');
 
 	z.previous_bounds = z.getBounds().clone();
+	z.prev_linePoint = cloneObj(z.linePoint);
 
-	if (e.target._type == 'rect') {
-			drawOutline(z);
-	}
+	removeOutline(lastShape);
+	lastShape = z;
+
+	//if (e.target._type == 'rect' || e.target._type == 'ellipse' || e.target._type == 'r-rect') {
+	drawOutline(z);
+	//}
 }
 
 function pressMove(e) {
@@ -550,55 +529,63 @@ function pressMove(e) {
 	var moveY = e.stageY - z._startY;
 	//console.log('pressmove',bounds);
 	//console.log(moveX);
-	
+
 	z.x = e.stageX + z.offset.x;
 	z.y = e.stageY + z.offset.y;
-	z.setBounds(bounds.x + moveX, bounds.y + moveY, bounds.width, bounds.height);
-	//console.log(bounds.x, moveX, z.getBounds().clone());
+	if ($.inArray(z._type, shapes) != -1) {
+		z.setBounds(bounds.x + moveX, bounds.y + moveY, bounds.width, bounds.height);
+	}
 	
-	drawOutline(z);
+
+	if (z.linePoint) {
+		z.linePoint.startX = z.prev_linePoint.startX + moveX;
+		z.linePoint.endX = z.prev_linePoint.endX + moveX;
+		z.linePoint.startY = z.prev_linePoint.startY + moveY;
+		z.linePoint.endY = z.prev_linePoint.endY + moveY;
+	}
+	
+	//console.log(bounds.x, moveX, z.getBounds().clone());
+
+	if (e.target._type == 'rect' || e.target._type == 'ellipse' || e.target._type == 'r-rect' || e.target._type == 'line' || e.target._type == 'arrow') {
+		drawOutline(z);
+	} else {
+		stage.update();
+	}
 	//shape.setBounds(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
 	//shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
 	//stage.update();
-	
+
+}
+
+function removeOutline(shape) {
+	console.log(shape);
+	if (shape && shape._handlers && (shape._handlers.lt || shape._handlers.start)) {
+		for (var i in shape._handlers) {
+			shape._handlers[i].graphics.clear();
+		}
+		stage.update();
+	}
 }
 
 
 function drawOutline(shape) {
 	//console.log(shape);
-	var bounds = shape.getBounds().clone(),
-		x = bounds.x,
-		y = bounds.y,
-		width = bounds.width,
-		height = bounds.height,
-		handlers = [
-		{
-			name: 'lt',
-			cursor: 'nwse-resize',
-			x : x,
-			y: y
-		},
-		{
-			name: 'rt',
-			cursor: 'nwse-resize',
-			x : x + width,
-			y: y
-		},
-		{
-			name: 'lb',
-			cursor: 'nwse-resize',
-			x : x,
-			y: y + height
-		},
-		{
-			name: 'rb',
-			cursor: 'nwse-resize',
-			x : x + width,
-			y: y + height
-		}
-		];
 
-		$.each(handlers, function (i, h) {
+	if (shape._type == 'line' || shape._type == 'arrow') {
+		var p = shape.linePoint;
+		handlers = [{
+			name: 'start',
+			cursor: 'move',
+			x: p.startX,
+			y: p.startY
+		}, {
+			name: 'end',
+			cursor: 'move',
+			x: p.endX,
+			y: p.endY
+		}];
+
+		$.each(handlers, function(i, h) {
 			var r = shape._handlers[h.name];
 			if (!r) {
 				var r = new createjs.Shape();
@@ -606,13 +593,31 @@ function drawOutline(shape) {
 				r.name = h.name;
 				r.cursor = h.cursor;
 				shape._handlers[h.name] = r;
-				if (r.name == 'rb') {
-					r.on('pressmove', function (e) {
-						var bounds = shape.getBounds();
-						rePaint(shape, bounds.x, bounds.y, e.stageX - bounds.x, e.stageY - bounds.y);
-						drawOutline(shape);
-					});
-				}
+
+				r.on('pressmove', function(e) {
+					var sx,sy,ex,ey;
+					var p = cloneObj(shape.linePoint);
+					if (r.name == 'end') {
+						sx = p.startX;
+						sy = p.startY;
+						ex = e.stageX;
+						ey = e.stageY;
+					} else {
+						sx = e.stageX;
+						sy = e.stageY;
+						ex = p.endX;
+						ey = p.endY;
+					}
+					rePaintLine(shape, sx, sy, ex, ey);
+					drawOutline(shape);
+				});
+
+				r.on('mouseover', function() {
+					hoverShape = true;
+				});
+				r.on('mouseout', function() {
+					hoverShape = false;
+				});
 
 				stage.addChild(r);
 			}
@@ -622,21 +627,144 @@ function drawOutline(shape) {
 				y: h.y
 			};
 
-			r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 8);
-			
-			
+			r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 6);
+		});
+	} else {
+		var bounds = shape.getBounds().clone(),
+			x = bounds.x,
+			y = bounds.y,
+			width = bounds.width,
+			height = bounds.height,
+			handlers = [{
+				name: 'lt',
+				cursor: 'nwse-resize',
+				x: x,
+				y: y
+			}, {
+				name: 'rt',
+				cursor: 'nesw-resize',
+				x: x + width,
+				y: y
+			}, {
+				name: 'lb',
+				cursor: 'nesw-resize',
+				x: x,
+				y: y + height
+			}, {
+				name: 'rb',
+				cursor: 'nwse-resize',
+				x: x + width,
+				y: y + height
+			}];
+
+		$.each(handlers, function(i, h) {
+			var r = shape._handlers[h.name];
+			if (!r) {
+				var r = new createjs.Shape();
+				r._type = 'handler';
+				r.name = h.name;
+				r.cursor = h.cursor;
+				shape._handlers[h.name] = r;
+
+				r.on('pressmove', function(e) {
+					var bounds = shape.getBounds().clone();
+					var rx, ry, rw, rh;
+					if (r.name == 'rb') {
+						rx = bounds.x;
+						ry = bounds.y;
+						rw = e.stageX - bounds.x;
+						rh = e.stageY - bounds.y
+					} else if (r.name == 'lb') {
+						rx = e.stageX;
+						ry = bounds.y;
+						rw = bounds.x - e.stageX + bounds.width;
+						rh = e.stageY - bounds.y;
+					} else if (r.name == 'lt') {
+						rx = e.stageX;
+						ry = e.stageY;
+						rw = bounds.x - e.stageX + bounds.width;
+						rh = bounds.y - e.stageY + bounds.height;
+					} else if (r.name == 'rt') {
+						rx = bounds.x;
+						ry = e.stageY;
+						rw = e.stageX - bounds.x;
+						rh = bounds.y - e.stageY + bounds.height;
+					}
+					rePaint(shape, rx, ry, rw, rh);
+					drawOutline(shape);
+				});
+
+				r.on('mouseover', function() {
+					hoverShape = true;
+				});
+				r.on('mouseout', function() {
+					hoverShape = false;
+				});
+
+				stage.addChild(r);
+			}
+
+			r.center = {
+				x: h.x,
+				y: h.y
+			};
+
+			r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 6);
+
+
 
 		});
+	}
 
-		stage.update();
+
+	stage.update();
 
 
 }
 
 function rePaint(shape, x, y, w, h) {
 	hoverShape = true;
-	shape.graphics.clear().beginStroke("#000").setStrokeStyle(8, "round").drawRect(x - shape.x, y - shape.y, w, h);
+	var sg = shape.graphics.clear().beginStroke("#000").setStrokeStyle(8, "round");
+
+	if (shape._type == 'rect') {
+		sg.drawRect(x - shape.x, y - shape.y, w, h);
+	} else if (shape._type == 'ellipse') {
+		sg.drawEllipse(x - shape.x, y - shape.y, w, h);
+	} else if (shape._type == 'r-rect') {
+		sg.drawRoundRect(x - shape.x, y - shape.y, w, h, 10);
+	}
+
 	shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(x - shape.x, y - shape.y, w, h);
 	shape.setBounds(x, y, w, h);
 	stage.update();
+}
+
+
+function rePaintLine(shape, sx, sy, ex, ey) {
+	hoverShape = true;
+	var sg = shape.graphics.clear().setStrokeStyle(8, "round").beginStroke("#000");
+	if (shape._type == 'line') {
+		sg.moveTo(sx - shape.x, sy - shape.y).lineTo(ex - shape.x, ey - shape.y);
+	} else if (shape._type == 'arrow') {
+		var angle = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+		sg.lineTo(sx - shape.x, sy - shape.y).lineTo(ex - shape.x, ey - shape.y).setStrokeStyle(8).beginStroke("#000").beginFill("#000").endStroke().drawPolyStar(ex - shape.x, ey - shape.y, 8 * 1.5, 3, 0.5, angle);
+	}
+
+	
+	shape.linePoint = {
+		startX: sx,
+		startY: sy,
+		endX: ex,
+		endY: ey
+	};
+	
+}
+
+function cloneObj (obj) {
+	var newObj = {};
+	for(var i in obj) {
+		newObj[i] = obj[i];
+	}
+
+	return newObj;
 }
