@@ -52,8 +52,8 @@ $('#insert-pic').on('click', function() {
 		bitmap.scaleX = 0.5;
 		bitmap.scaleY = 0.5;
 		bitmap.cursor = 'move';
-		bitmap.addEventListener('mousedown', smouseDown);
-		bitmap.addEventListener('pressmove', pressMove);
+		bitmap.addEventListener('mousedown', smouseDown, false);
+		bitmap.addEventListener('pressmove', pressMove, false);
 		bitmap.addEventListener('mouseover', function(e) {
 			if (creating) {
 				return;
@@ -178,8 +178,8 @@ function drawText(content, x, y) {
 	var text = new createjs.Text(content, "20px Arial", "#ff7700");
 	text.x = stageX;
 	text.y = stageY;
-	text.addEventListener('mousedown', smouseDown);
-	text.addEventListener('pressmove', pressMove);
+	text.addEventListener('mousedown', smouseDown, false);
+	text.addEventListener('pressmove', pressMove, false);
 	var hitArea = new createjs.Shape();
 	hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, text.getMeasuredWidth(), text.getMeasuredHeight());
 	text.hitArea = hitArea;
@@ -310,8 +310,8 @@ function mouseDown(e) {
 		var shape = new createjs.Shape();
 		//shape.graphics.beginStroke("#000").setStrokeStyle(8,"round").drawEllipse(e.stageX, e.stageY, 0, 0);
 		creating = true;
-		shape.addEventListener('mousedown', smouseDown);
-		shape.addEventListener('pressmove', pressMove);
+		shape.addEventListener('mousedown', smouseDown, false);
+		shape.addEventListener('pressmove', pressMove, false);
 		/*shape.addEventListener('mouseup', function() {
 		delete shape.x;
 		delete shape.y;
@@ -497,6 +497,7 @@ function mouseDown(e) {
 
 function smouseDown(e) {
 	var z = e.target;
+	bringToTop(z);
 	console.log("smouseDown", e);
 	z._startX = e.stageX;
 	z._startY = e.stageY;
@@ -767,4 +768,16 @@ function cloneObj (obj) {
 	}
 
 	return newObj;
+}
+
+function bringToTop (shape) {
+	var index = stage.getChildIndex(shape);
+	var num = stage.getNumChildren();
+	stage.addChildAt(shape,num);
+	if (shape._handlers && (shape._handlers.lt || shape._handlers.start)) {
+		for (var i in shape._handlers) {
+			var h = shape._handlers[i];
+			stage.addChildAt(h, num);
+		}
+	}
 }
