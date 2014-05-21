@@ -3,7 +3,9 @@ var lastShape = null;
 
 var elements = [];
 
-var shapes = ['rect','ellipse','r-rect'];
+var shapes = ['rect', 'ellipse', 'r-rect'];
+
+
 
 $('#actions').find('.btn').on('click', function() {
 	shapeType = $(this).siblings('.btn').removeClass('active').end().addClass('active').attr('id');
@@ -312,10 +314,17 @@ function mouseDown(e) {
 		creating = true;
 		shape.addEventListener('mousedown', smouseDown, false);
 		shape.addEventListener('pressmove', pressMove, false);
-		/*shape.addEventListener('mouseup', function() {
-		delete shape.x;
-		delete shape.y;
-	});*/
+		shape.addEventListener('pressup', function(e) {
+			if (e.currentTarget._startX != e.stageX && e.currentTarget._startY != e.stageY) {
+				undoManager.createUndo({
+					target: e.currentTarget,
+					x: e.currentTarget.backup.x,
+					y: e.currentTarget.backup.y,
+					bounds: cloneObj(e.currentTarget.backup.bounds)
+
+				});
+			}
+		});
 		stage.addChild(shape);
 		shape.cursor = 'move';
 		shape._points = [];
@@ -323,7 +332,7 @@ function mouseDown(e) {
 
 		shape._type = shapeType;
 
-		
+
 		//hitArea.graphics.beginFill("#FFF").drawEllipse(e.stageX, e.stageY, 1, 1);
 
 		shape.addEventListener('mouseover', function(e) {
@@ -347,7 +356,7 @@ function mouseDown(e) {
 			var hitArea = new createjs.Shape();
 			shape.hitArea = hitArea;
 		}
-		
+
 	}
 
 
@@ -442,7 +451,7 @@ function mouseDown(e) {
 			if ($.inArray(shapeType, shapes) != -1) {
 				shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(originalX, originalY, e.stageX - originalX, e.stageY - originalY);
 			}
-			
+
 		} else {
 
 			var max = {
@@ -472,7 +481,7 @@ function mouseDown(e) {
 			}
 
 
-			shape.setBounds(0,0,0,0);
+			shape.setBounds(0, 0, 0, 0);
 			//shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(min.x, min.y, max.x - min.x, max.y - min.y);
 		}
 
@@ -482,7 +491,9 @@ function mouseDown(e) {
 	stage.addEventListener('stagemouseup', function(e) {
 		console.log("stagemouseup");
 		if (stage.mouseInBounds) {
-
+			if (e.stageX == originalX && e.stageY == originalY) {
+				stage.removeChild(shape);
+			}
 			creating = false;
 			stage.off('stagemousemove', smouseMove, false);
 			if (bitmap) {
@@ -498,6 +509,11 @@ function mouseDown(e) {
 function smouseDown(e) {
 	var z = e.target;
 	bringToTop(z);
+	z.backup = {
+		bounds: z.getBounds().clone(),
+		x: z.x,
+		y: z.y
+	};
 	console.log("smouseDown", e);
 	z._startX = e.stageX;
 	z._startY = e.stageY;
@@ -536,7 +552,7 @@ function pressMove(e) {
 	if ($.inArray(z._type, shapes) != -1) {
 		z.setBounds(bounds.x + moveX, bounds.y + moveY, bounds.width, bounds.height);
 	}
-	
+
 
 	if (z.linePoint) {
 		z.linePoint.startX = z.prev_linePoint.startX + moveX;
@@ -544,7 +560,7 @@ function pressMove(e) {
 		z.linePoint.startY = z.prev_linePoint.startY + moveY;
 		z.linePoint.endY = z.prev_linePoint.endY + moveY;
 	}
-	
+
 	//console.log(bounds.x, moveX, z.getBounds().clone());
 
 	if (e.target._type == 'rect' || e.target._type == 'ellipse' || e.target._type == 'r-rect' || e.target._type == 'line' || e.target._type == 'arrow') {
@@ -562,7 +578,7 @@ function removeOutline(shape) {
 	console.log(shape);
 	if (shape && shape._handlers && (shape._handlers.lt || shape._handlers.start)) {
 		for (var i in shape._handlers) {
-			shape._handlers[i].graphics.clear();
+			stage.removeChild(shape._handlers[i]);
 		}
 		stage.update();
 	}
@@ -596,7 +612,7 @@ function drawOutline(shape) {
 				shape._handlers[h.name] = r;
 
 				r.on('pressmove', function(e) {
-					var sx,sy,ex,ey;
+					var sx, sy, ex, ey;
 					var p = cloneObj(shape.linePoint);
 					if (r.name == 'end') {
 						sx = p.startX;
@@ -620,8 +636,9 @@ function drawOutline(shape) {
 					hoverShape = false;
 				});
 
-				stage.addChild(r);
+
 			}
+			stage.addChild(r);
 
 			r.center = {
 				x: h.x,
@@ -702,8 +719,30 @@ function drawOutline(shape) {
 					hoverShape = false;
 				});
 
-				stage.addChild(r);
+				r.on('mousedown', function() {
+					var z = shape;
+					z.backup = {
+						bounds: z.getBounds().clone(),
+						x: z.x,
+						y: z.y
+					};
+				});
+
+				r.on('pressup', function(e) {
+					
+						undoManager.createUndo({
+							target: shape,
+							x: shape.backup.x,
+							y: shape.backup.y,
+							bounds: cloneObj(shape.backup.bounds)
+
+						});
+				});
+
+
 			}
+
+			stage.addChild(r);
 
 			r.center = {
 				x: h.x,
@@ -751,29 +790,30 @@ function rePaintLine(shape, sx, sy, ex, ey) {
 		sg.lineTo(sx - shape.x, sy - shape.y).lineTo(ex - shape.x, ey - shape.y).setStrokeStyle(8).beginStroke("#000").beginFill("#000").endStroke().drawPolyStar(ex - shape.x, ey - shape.y, 8 * 1.5, 3, 0.5, angle);
 	}
 
-	
+
 	shape.linePoint = {
 		startX: sx,
 		startY: sy,
 		endX: ex,
 		endY: ey
 	};
-	
+
 }
 
-function cloneObj (obj) {
+function cloneObj(obj) {
 	var newObj = {};
-	for(var i in obj) {
+	for (var i in obj) {
 		newObj[i] = obj[i];
 	}
 
 	return newObj;
 }
 
-function bringToTop (shape) {
+
+function bringToTop(shape) {
 	var index = stage.getChildIndex(shape);
 	var num = stage.getNumChildren();
-	stage.addChildAt(shape,num);
+	stage.addChildAt(shape, num);
 	if (shape._handlers && (shape._handlers.lt || shape._handlers.start)) {
 		for (var i in shape._handlers) {
 			var h = shape._handlers[i];
@@ -781,3 +821,61 @@ function bringToTop (shape) {
 		}
 	}
 }
+
+var undoManager = (function() {
+	var undos = [],
+		redos = [];
+
+	return {
+		createUndo: function(o) {
+			/*var children = [];
+			for (var i = 0,n = stage.children.length;i < n;i++) {
+				var c = stage.children[i].clone();
+				c._bounds = cloneObj(stage.children[i]._bounds);
+				c._type = stage.children[i]._type;
+				c.previous_bounds = cloneObj(stage.children[i].previous_bounds);
+				c.prev_linePoint = cloneObj(stage.children[i].linePoint);
+				c.offset = cloneObj(stage.children[i].offset);
+				c._startX = stage.children[i]._startX;
+				c._startY = stage.children[i]._startY;
+				c._listeners = cloneObj(stage.children[i]._listeners);
+				c.hitArea = new createjs.Shape().graphics.beginFill("#FFF").drawRect(c._bounds.x, c._bounds.x, c._bounds.width, c._bounds.height);
+				children.push(c);
+			}*/
+
+			undos.push(o);
+		},
+
+		undo: function() {
+			removeOutline(lastShape);
+			var u = undos.pop();
+			u.target.x = u.x;
+			u.target.y = u.y;
+			u.target.setBounds(u.bounds.x, u.bounds.y, u.bounds.width, u.bounds.height);
+			u.target.graphics.clear().setStrokeStyle(8, "round").beginStroke("#000").drawRect(u.bounds.x - u.x, u.bounds.y - u.y, u.bounds.width, u.bounds.height);
+			u.target.hitArea.graphics.clear().beginFill("#FFF").drawRect(u.bounds.x, u.bounds.y, u.bounds.width, u.bounds.height);
+			stage.update();
+			if (this.onChangeHandler) {
+				this.onChangeHandler.call(null, undos.length, redos.length);
+			}
+		},
+
+		redo: function() {
+			var u = redos.pop();
+			stage.children = u.children;
+			stage.update();
+			undos.push(u);
+			if (this.onChangeHandler) {
+				this.onChangeHandler.call(null, undos.length, redos.length);
+			}
+		},
+
+		onChange: function(callback) {
+			this.onChangeHandler = callback;
+		},
+
+		getUndos: function() {
+			return undos;
+		}
+	};
+})();
