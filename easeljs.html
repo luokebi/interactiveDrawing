@@ -72,6 +72,14 @@
 <script type="text/javascript" src="easeljs-0.7.1.min.js"></script>
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
 <!-- <script type="text/javascript" src="bootstrap.min.js"></script> -->
-<script type="text/javascript" src="main.js"></script>
+<!-- <script type="text/javascript" src="main.js"></script> -->
+<script type="text/javascript" src="src/draw.js"></script>
+<script type="text/javascript">
+	var pb = new paintBoard.Board('test');
+
+	$('#actions').find('.btn').on('click', function() {
+		pb.shapeType = $(this).siblings('.btn').removeClass('active').end().addClass('active').attr('id');
+	});
+</script>
 </body>
 </html>

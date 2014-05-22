@@ -182,7 +182,7 @@ function drawText(content, x, y) {
 	text.y = stageY;
 	text.addEventListener('mousedown', smouseDown, false);
 	text.addEventListener('pressmove', pressMove, false);
-	var hitArea = new createjs.Shape();
+
 	hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, text.getMeasuredWidth(), text.getMeasuredHeight());
 	text.hitArea = hitArea;
 	text.cursor = 'move';
@@ -729,14 +729,14 @@ function drawOutline(shape) {
 				});
 
 				r.on('pressup', function(e) {
-					
-						undoManager.createUndo({
-							target: shape,
-							x: shape.backup.x,
-							y: shape.backup.y,
-							bounds: cloneObj(shape.backup.bounds)
 
-						});
+					undoManager.createUndo({
+						target: shape,
+						x: shape.backup.x,
+						y: shape.backup.y,
+						bounds: cloneObj(shape.backup.bounds)
+
+					});
 				});
 
 
@@ -848,7 +848,7 @@ var undoManager = (function() {
 
 		undo: function() {
 			removeOutline(lastShape);
-			var u = undos.pop();
+			var u = undos.pop().undo;
 			u.target.x = u.x;
 			u.target.y = u.y;
 			u.target.setBounds(u.bounds.x, u.bounds.y, u.bounds.width, u.bounds.height);
