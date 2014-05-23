@@ -536,6 +536,8 @@ function smouseDown(e) {
 	//}
 }
 
+
+    
 function pressMove(e) {
 	if (creating) {
 		return;
