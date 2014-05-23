@@ -76,6 +76,10 @@
 <script type="text/javascript" src="src/draw2.js"></script>
 <script type="text/javascript">
 	var pb = new PaintBoard('test');
+
+	$('#actions').find('.btn').on('click', function() {
+	pb.shapeType = $(this).siblings('.btn').removeClass('active').end().addClass('active').attr('id');
+});
 </script>
 </body>
 </html>
