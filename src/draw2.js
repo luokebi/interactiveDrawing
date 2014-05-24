@@ -25,13 +25,23 @@
             pb.stage.enableMouseOver(10);
             pb.stage.on('stagemousedown', mouseDown, false);
             insertInput();
+
+            var image = new Image();
+            image.src = "assets/test.png";
+            image.crossOrigin = "Anonymous";
+            image.onload = function() {
+                var bitmap = new createjs.Bitmap(image);
+                pb.stage.addChild(bitmap);
+                pb.stage.update();
+
+            };
             document.addEventListener('mousedown', function() {
 
             });
         }
 
         function mouseDown(e) {
-            console.info('stage mousedown');
+            console.info('stage mousedown', pb.hoverShape);
             if (!pb.shapeType) {
                 return;
             } else if (pb.hoverShape) {
@@ -72,6 +82,9 @@
                 case 'text':
                     drawText(e.nativeEvent.pageX, e.nativeEvent.pageY, e.stageX, e.stageY);
                     pb.creating = false;
+                    break;
+                case 'blur':
+                    var s = new BlurRect(e.stageX, e.stageY);
                     break;
             }
 
@@ -118,6 +131,7 @@
             }
 
             function mouseup(e) {
+                console.info('stage mouseup', pb.stage.mouseInBounds);
                 if (pb.stage.mouseInBounds) {
                     if (e.stageX == originalX && e.stageY == originalY) {
                         pb.stage.removeChild(s);
@@ -292,6 +306,9 @@
 
             s.addEventListener('mouseover', function() {
                 console.info('shape mouseover');
+                if (pb.creating) {
+                    return;
+                }
                 pb.hoverShape = true;
                 s.shadow = new createjs.Shadow(z.strokeColor, 0, 0, 10);
                 s.getStage().update();
@@ -307,6 +324,9 @@
             }, false);
 
             s.addEventListener('mousedown', function(e) {
+                if (pb.creating) {
+                    return;
+                }
                 z.bringToTop();
                 z.backup = {
                     bounds: cloneObj(z.bounds),
@@ -331,6 +351,7 @@
             }, false);
 
             s.addEventListener('pressmove', function(e) {
+                console.log(pb.creating);
                 if (pb.creating) {
                     return;
                 }
@@ -356,7 +377,7 @@
         };
 
         Shape.prototype.select = function() {
-            if (pb.selectedShape) {
+            if (pb.selectedShape && pb.selectedShape.shape.id != this.shape.id) {
                 pb.unSelect();
             }
             this.drawHandlers();
@@ -572,7 +593,7 @@
         };
 
         LineShape.prototype.select = function() {
-            if (pb.selectedShape) {
+            if (pb.selectedShape && pb.selectedShape.shape.id != this.shape.id) {
                 pb.unSelect();
             }
             this.drawHandlers();
@@ -732,7 +753,7 @@
         };
 
         FreeShape.prototype.select = function() {
-            if (pb.selectedShape) {
+            if (pb.selectedShape && pb.selectedShape.shape.id != this.shape.id) {
                 pb.unSelect();
             }
             this.selected = true;
@@ -843,7 +864,7 @@
         };
 
         Text.prototype.select = function() {
-            if (pb.selectedShape) {
+            if (pb.selectedShape && pb.selectedShape.shape.id != this.shape.id) {
                 pb.unSelect();
             }
             this.selected = true;
@@ -1040,6 +1061,53 @@
             z.shape.graphics.endStroke().setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, 8 * 2.5, 3, 0.5, angle);
         };
 
+        /** 
+         * Blur rectangle.
+         =================================================*/
+
+        function BlurRect(x, y) {
+            Shape.apply(this, arguments);
+            this.addImg();
+        }
+
+        extend(BlurRect, Shape);
+
+        BlurRect.prototype.addImg = function() {
+            var z = this;
+            var image = new Image();
+            image.onload = imgOnLoad;
+            image.src = "assets/test.png";
+            image.crossOrigin = "Anonymous";
+            z.shape = new createjs.Bitmap(image);
+            z.shape.shadow = new createjs.Shadow('#f00', 0, 0, 10);
+            z.init();
+            z.shape.hitArea = null;
+
+            function imgOnLoad() {
+                var s = z.shape;
+                var blurFilter = new createjs.BlurFilter(10, 10, 1);
+                s.x = z.bounds.x;
+                s.y = z.bounds.y;
+                s.cache(0, 0, 0, 0);
+                s.filters = [blurFilter];
+                s.cursor = 'move';
+            }
+
+
+        };
+
+        BlurRect.prototype.rePaint = function() {
+            var z = this,
+                s = z.shape;
+
+            s.sourceRect = new createjs.Rectangle(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+            s.x = z.bounds.x;
+            s.y = z.bounds.y;
+            s.cache(0, 0, z.bounds.width, z.bounds.height);
+            s.width = z.bounds.width;
+            s.height = z.bounds.height;
+        };
+
 
 
     }
@@ -1087,42 +1155,6 @@
     PaintBoard.prototype.zoomOut = function(level) {
         this.canvas.style.transform = "scale(" + level + ")";
         return this;
-    };
-
-    PaintBoard.prototype.insert = function(src) {
-        function onloadHandler() {
-            var bitmap = new createjs.Bitmap(image);
-            bitmap.x = 100;
-            bitmap.y = 100;
-            bitmap.regX = 50;
-            bitmap.regY = 50;
-            bitmap.scaleX = 0.5;
-            bitmap.scaleY = 0.5;
-            bitmap.cursor = 'move';
-
-            bitmap.addEventListener('mousedown', mouseDown, false);
-            bitmap.addEventListener('pressmove', pressMove, false);
-            bitmap.addEventListener('mouseover', mouseOver, false);
-            bitmap.addEventListener('mouseout', mouseOut, false);
-
-            function mouseDown(e) {
-
-            }
-
-            function mouseOver() {
-                this.hoverShape = true;
-            }
-
-            function mouseOut() {
-                this.hoverShape = false;
-            }
-
-            this.stage.addChild(bitmap);
-            this.stage.update();
-        }
-
-
-
     };
 
     PaintBoard.prototype.toDataURL = function(mimeType) {
