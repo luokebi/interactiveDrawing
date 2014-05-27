@@ -39,26 +39,40 @@
 	<textarea id="temp-input"></textarea>
 </div>
 	<div class="tools">
-		<div class="btn-group" data-toggle="buttons-radio" id="switcher">
-<button class="btn btn-primary" id="off">off</button>
-<button class="btn btn-primary" id="on">on</button>
-</div>
+		<!-- <div class="btn-group" data-toggle="buttons-radio" id="switcher">
+		<button class="btn btn-primary" id="off">off</button>
+		<button class="btn btn-primary" id="on">on</button>
+		</div> -->
 
-<div class="btn-group" data-toggle="buttons-radio" id="actions">
-<button class="btn btn-primary" id="rect">Rectangle</button>
-<button class="btn btn-primary" id="r-rect">Round rectangle</button>
-<button class="btn btn-primary" id="ellipse">Ellipse</button>
-<!-- <button class="btn btn-default" id="circle">Circle</button> -->
-<button class="btn btn-primary" id="arrow">Arrow</button>
-<button class="btn btn-primary" id="free-arrow">Free Arrow</button>
-<button class="btn btn-primary" id="line">Line</button>
-<button class="btn btn-primary" id="free-line">Free line</button>
-<button class="btn btn-primary" id="text">Text</button>
-<button class="btn btn-primary" id="blur" >Blur</button>
+<div data-toggle="buttons-radio" id="actions">
+<div class="btn-group">
+	<button class="btn btn-primary" id="rect">Rectangle</button>
+	<button class="btn btn-primary" id="d-rect">Dashed Rectangle</button>
+	<button class="btn btn-primary" id="r-rect">Round rectangle</button>
+</div>
+<div class="btn-group">
+	<button class="btn btn-primary" id="ellipse">Ellipse</button>
+	<!-- <button class="btn btn-default" id="circle">Circle</button> -->
+</div>
+<div class="btn-group">
+	<button class="btn btn-primary" id="arrow">Arrow</button>
+	<button class="btn btn-primary" id="d-arrow">Dashed Arrow</button>
+	<button class="btn btn-primary" id="db-arrow">Double Arrow</button>
+	<button class="btn btn-primary" id="dbd-arrow">Double Dashed Arrow</button>
+	<button class="btn btn-primary" id="free-arrow">Free Arrow</button>
+</div>
+<div class="btn-group">
+	<button class="btn btn-primary" id="line">Line</button>
+	<button class="btn btn-primary" id="d-line">Dashed Line</button>
+	<button class="btn btn-primary" id="free-line">Free line</button>
+</div>
+<div class="btn-group">
+	<button class="btn btn-primary" id="text">Text</button>
+	<button class="btn btn-primary" id="blur" >Blur</button>
+</div>
 </div>
 <div class="btn-group">
 	<button class="btn btn-primary" id="insert-pic">Insert pic</button>
-		<button class="btn btn-primary" id="insert-svg">Insert svg</button>
 </div>
 <div class="btn-group">
 <button class="btn btn-primary" id="off">Undo</button>
@@ -67,8 +81,6 @@
 </div>
 	</div>
 
-<img src="assets/check.svg" alt="">
-
 <script type="text/javascript" src="easeljs-0.7.1.min.js"></script>
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
 <!-- <script type="text/javascript" src="bootstrap.min.js"></script> -->
@@ -76,11 +88,12 @@
 <script type="text/javascript" src="src/draw3.js"></script>
 <!-- <script type="text/javascript" src="src/paintBoard.min.js"></script> -->
 <script type="text/javascript">
-	var p = PaintBoard.createBoard('test');
+	var p = paintBoard.createBoard('test');
 	//var pb = new PaintBoard('test');
 
 	$('#actions').find('.btn').on('click', function() {
-	p.setShapeType($(this).siblings('.btn').removeClass('active').end().addClass('active').attr('id'));
+		$('.btn').removeClass('active');
+		p.setShapeType($(this).addClass('active').attr('id'));
 });
 </script>
 </body>
