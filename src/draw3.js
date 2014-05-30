@@ -216,6 +216,9 @@
                      case 'ellipse':
                          var s = new Ellipse(e.stageX, e.stageY);
                          break;
+                     case 's-b':
+                         var s = new speechBubble(e.stageX, e.stageY);
+                         break;
                      case 'r-rect':
                          var s = new RoundRect(e.stageX, e.stageY);
                          break;
@@ -312,7 +315,18 @@
                  temp_input.id = 'temp_input';
                  temp_input.style.position = 'absolute';
                  temp_input.style.display = 'none';
+                 temp_input.style.border = '1px dashed #f00';
+                 temp_input.style.outline = 'none';
+                 temp_input.style.padding = 0;
+                 temp_input.style.resize = 'none';
+                 temp_input.style.backgroundColor = 'transparent';
+                 temp_input.style.overflow = 'hidden';
+                 temp_input.style.color = strokeColor;
+                 temp_input.style.fontSize = fontSize;
+                 temp_input.style.fontFamily = fontFamily;
+                 temp_input.style.lineHeight = fontSize;
                  document.body.appendChild(temp_input);
+                 autoExpand(temp_input);
 
                  temp_input.addEventListener('blur', function(e) {
                      var x = this.getAttribute('data-stage-x'),
@@ -324,8 +338,12 @@
                      if (this.value != '') {
                          var content = temp_input.value;
                          if (isEdit) {
-                             textOnEdit.text = content;
-                             textOnEdit.hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, textOnEdit.getMeasuredWidth(), textOnEdit.getMeasuredHeight());
+                             console.log(textOnEdit);
+                             textOnEdit.content = content;
+                             textOnEdit.bounds.width = temp_input.cols * parseInt(temp_input.style.fontSize);
+                             textOnEdit.bounds.height = temp_input.rows * parseInt(temp_input.style.lineHeight);
+                             textOnEdit.rePaint();
+                             //textOnEdit.hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, textOnEdit.getMeasuredWidth(), textOnEdit.getMeasuredHeight());
                          } else {
                              var text = new Text(content, x, y);
                              stage.addChild(text.shape);
@@ -355,6 +373,7 @@
                      temp_input.setAttribute('data-stage-y', sy);
                  }
                  temp_input.style.display = 'block';
+                 fixTextarea(temp_input);
 
                  setTimeout(function() {
                      temp_input.focus();
@@ -417,6 +436,36 @@
                  } while (elem);
              }
              return offset;
+         }
+
+         function autoExpand(textarea) {
+             if (textarea.addEventListener) {
+                 textarea.addEventListener('input', function() {
+                     fixTextarea(textarea);
+                 }, false);
+             } else if (textarea.attachEvent) {
+                 // IE8 compatibility
+                 textarea.attachEvent('onpropertychange', function() {
+                     fixTextarea(textarea);
+                 });
+             }
+         }
+
+         function fixTextarea(textarea) {
+             var k = 1,
+                 l = 2
+             var text = textarea.value;
+             var m = text.split("\n");
+             var k = m.length + 1;
+
+             for (var i = 0, n = m.length; i < n; i++) {
+                 if (m[i].length > l) {
+                     l = m[i].length;
+                 }
+             }
+
+             textarea.setAttribute('rows', k);
+             textarea.setAttribute('cols', l);
          }
 
          /** 
@@ -919,6 +968,12 @@
              this.content = content;
              this.x = x;
              this.y = y;
+             this.bounds = {
+                 x: x,
+                 y: y,
+                 width: 0,
+                 height: 0
+             },
              this.alpha = alpha;
              this.strokeColor = strokeColor;
              this.fontSize = fontSize;
@@ -997,13 +1052,20 @@
              });
 
              s.addEventListener('dblclick', function(e) {
-                 textOnEdit = s;
+                 textOnEdit = z;
                  var offset = getOffset(board.canvas);
                  temp_input.style.top = parseFloat(s.y) + offset.top + 'px';
                  temp_input.style.left = parseFloat(s.x) + offset.left + 'px';
                  temp_input.value = s.text;
                  temp_input.setAttribute('data-edit', "true");
+                 temp_input.style.color = z.strokeColor;
+                 temp_input.style.fontSize = z.fontSize;
+                 temp_input.style.fontFamily = z.fontFamily;
+                 temp_input.style.lineHeight = z.fontSize;
                  temp_input.style.display = 'block';
+                 fixTextarea(temp_input);
+                 s.text = '';
+                 s.getStage().update();
                  setTimeout(function() {
                      temp_input.focus();
                  }, 0);
@@ -1011,14 +1073,19 @@
          };
 
          Text.prototype.rePaint = function() {
-             var text = this.shape;
+             var z = this;
+             var text = z.shape;
+             console.log(this);
+             text.color = z.strokeColor;
 
-             text.color = this.strokeColor;
-             text.text = this.content;
-             text.font = this.fontSize + " " + this.fontFamily;
-             text.fontSize = this.fontSize;
+             text.text = z.content;
+             console.log(z.content);
+             text.font = z.fontSize + " " + z.fontFamily;
+             text.lineHeight = parseInt(z.fontSize);
 
-             text.hitArea.graphics.clear().beginFill("#f00").drawRect(0, 0, text.getMeasuredWidth(), text.getMeasuredHeight());
+             console.log("rePaint", text.getBounds(), z);
+
+             text.hitArea.graphics.clear().beginFill("#f00").drawRect(0, 0, z.bounds.width, z.bounds.height);
          };
 
          Text.prototype.select = function() {
@@ -1160,6 +1227,25 @@
          Ellipse.prototype.rePaint = function() {
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").beginStroke(this.strokeColor).drawEllipse(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+             z.shape.hitArea.graphics.clear().beginFill("#FFF").drawEllipse(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+         };
+
+
+         /** 
+         * speech bubble
+         =================================================*/
+
+         function speechBubble(x, y) {
+             Shape.apply(this, arguments);
+             this.shape.shadow = new createjs.Shadow('rgba(0,0,0,.5)', 2, 2, 4);
+         };
+
+         extend(speechBubble, Shape);
+
+         speechBubble.prototype.rePaint = function() {
+             var z = this;
+             z.shape.graphics.clear().beginFill(this.strokeColor).drawEllipse(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height).endStroke();
+             z.shape.graphics.beginFill(this.strokeColor).drawCircle(z.bounds.x + z.bounds.width / 5, z.bounds.y + z.bounds.height + z.bounds.height / 8, z.bounds.height / 8).endFill().beginFill(this.strokeColor).drawCircle(z.bounds.x + z.bounds.width / 5 - (z.bounds.height / 15 + z.bounds.height / 8 + 10), z.bounds.y + z.bounds.height + z.bounds.height / 8 + z.bounds.height / 15 + 15, z.bounds.height / 15);
              z.shape.hitArea.graphics.clear().beginFill("#FFF").drawEllipse(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
          };
 
