@@ -7,6 +7,9 @@
 <style type="text/css">
 	canvas {
 		border: 1px solid #000;
+		position: absolute;
+		left: 0px;
+		top: 0px;
 	}
 
 	.normal {
@@ -34,8 +37,9 @@
 <link rel="stylesheet" href="bootstrap.min.css">
 <body>
 <div class="container">
-<div style="position:relative">
-	<canvas id="test" width="1000px" height="500px" class="normal"></canvas>
+<div style="position:relative; height:500px;width:1000px;margin:0 auto;">
+    <canvas id="bg" width="1000px" height="500px" class="normal"></canvas>
+	<canvas id="draw" width="1000px" height="500px" class="normal"></canvas>
 	<textarea id="temp-input"></textarea>
 </div>
 	<div class="tools">
@@ -89,7 +93,15 @@
 <script type="text/javascript" src="src/draw3.js"></script>
 <!-- <script type="text/javascript" src="src/paintBoard.min.js"></script> -->
 <script type="text/javascript">
-	var p = paintBoard.createBoard('test');
+	var bgCanvas = document.getElementById('bg');
+	var ctx = bgCanvas.getContext('2d');
+	var image = new Image();
+       image.src = "assets/test.png";
+        image.onload = function() {
+                 ctx.drawImage(image, 0,0, 1000, 500);
+        };
+	
+	var p = paintBoard.createBoard('draw');
 	//var pb = new PaintBoard('test');
 
 	$('#actions').find('.btn').on('click', function() {

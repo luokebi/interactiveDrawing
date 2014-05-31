@@ -175,16 +175,6 @@
 
              insertInput();
 
-             var image = new Image();
-             image.src = "assets/test.png";
-             image.crossOrigin = "Anonymous";
-             image.onload = function() {
-                 var bitmap = new createjs.Bitmap(image);
-                 stage.addChild(bitmap);
-                 stage.update();
-
-             };
-
              stage.enableMouseOver(10);
              stage.on('stagemousedown', mouseDown, false);
 
