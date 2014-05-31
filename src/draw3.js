@@ -267,10 +267,12 @@
                  stage.addEventListener('stagemouseup', mouseup, false);
 
                  function mousemove(e) {
-                     console.info('stagemousemove');
+                     //console.info('stagemousemove');
                      if (s._type == 'shape') {
-                         s.bounds.width = e.stageX - s.bounds.x;
-                         s.bounds.height = e.stageY - s.bounds.y;
+                         s.bounds.width = Math.abs(e.stageX - originalX);
+                         s.bounds.height = Math.abs(e.stageY - originalY);
+                         s.bounds.x = Math.min(originalX, e.stageX);
+                         s.bounds.y = Math.min(originalY, e.stageY);
                      } else if (s._type == 'line') {
                          s.endX = e.stageX;
                          s.endY = e.stageY;
@@ -336,16 +338,21 @@
                      console.info(x, y, isEdit);
 
                      if (this.value != '') {
-                         var content = temp_input.value;
+                         var content = temp_input.value,
+                             w = parseInt(temp_input.style.width),
+                             h = parseInt(temp_input.style.height);
+
                          if (isEdit) {
                              console.log(textOnEdit);
                              textOnEdit.content = content;
-                             textOnEdit.bounds.width = temp_input.cols * parseInt(temp_input.style.fontSize);
-                             textOnEdit.bounds.height = temp_input.rows * parseInt(temp_input.style.lineHeight);
+                             textOnEdit.bounds.width = w;
+                             textOnEdit.bounds.height = h;
                              textOnEdit.rePaint();
-                             //textOnEdit.hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, textOnEdit.getMeasuredWidth(), textOnEdit.getMeasuredHeight());
                          } else {
                              var text = new Text(content, x, y);
+                             text.bounds.width = w;
+                             text.bounds.height = h;
+                             text.rePaint();
                              stage.addChild(text.shape);
                          }
                          stage.update();
@@ -453,19 +460,30 @@
 
          function fixTextarea(textarea) {
              var k = 1,
-                 l = 2
+                 lt = 'mmm'
              var text = textarea.value;
              var m = text.split("\n");
              var k = m.length + 1;
 
              for (var i = 0, n = m.length; i < n; i++) {
-                 if (m[i].length > l) {
-                     l = m[i].length;
+                 if (m[i].length > lt.length) {
+                     lt = m[i];
                  }
              }
 
-             textarea.setAttribute('rows', k);
-             textarea.setAttribute('cols', l);
+             var w = getWidth(lt, textarea.style.fontSize, textarea.style.fontFamily);
+             textarea.style.width = w + 'px';
+             textarea.style.height = k * parseInt(textarea.style.lineHeight) + "px";
+             //textarea.setAttribute('rows', k);
+             //textarea.setAttribute('cols', l);
+         }
+
+         function getWidth(text, fontSize, fontFamily) {
+            text += "m";
+            var temp_text = new createjs.Text(text, fontSize + ' ' + fontFamily);
+            var w = temp_text.getMeasuredWidth();
+            temp_text = null;
+            return w;
          }
 
          /** 
@@ -616,6 +634,8 @@
                      y: y + h
                  }];
 
+                  //console.log(x,y,w,h)
+
              for (var i = 0, n = handlers.length; i < n; i++) {
                  (function(i) {
                      var h = handlers[i];
@@ -627,30 +647,35 @@
                          r.name = h.name;
                          r.cursor = h.cursor;
                          z.handlers[h.name] = r;
+                         var obounds = {};
+                         r.on('mousedown', function () {
+                            obounds = cloneObj(z.bounds);
+                         },false);
 
                          r.on('pressmove', function(e) {
-                             var bounds = cloneObj(z.bounds);
+                            console.log(r.name);
+                             var _bounds = cloneObj(z.bounds);
                              var rx, ry, rw, rh;
                              if (r.name == 'rb') {
-                                 rx = bounds.x;
-                                 ry = bounds.y;
-                                 rw = e.stageX - bounds.x;
-                                 rh = e.stageY - bounds.y
+                                 rx = Math.min(e.stageX, obounds.x);
+                                 ry = Math.min(e.stageY, obounds.y);
+                                 rw = Math.abs(e.stageX - obounds.x);
+                                 rh = Math.abs(e.stageY - obounds.y);
                              } else if (r.name == 'lb') {
-                                 rx = e.stageX;
-                                 ry = bounds.y;
-                                 rw = bounds.x - e.stageX + bounds.width;
-                                 rh = e.stageY - bounds.y;
+                                 rx = (obounds.x - e.stageX + obounds.width) >= 0 ? e.stageX : _bounds.x;
+                                 ry = Math.min(e.stageY, obounds.y);
+                                 rw = Math.abs(obounds.x - e.stageX + obounds.width);
+                                 rh = Math.abs(e.stageY - obounds.y);                               
                              } else if (r.name == 'lt') {
-                                 rx = e.stageX;
-                                 ry = e.stageY;
-                                 rw = bounds.x - e.stageX + bounds.width;
-                                 rh = bounds.y - e.stageY + bounds.height;
+                                 rx = (obounds.x - e.stageX + obounds.width) >= 0 ? e.stageX : _bounds.x;
+                                 ry = (obounds.y - e.stageY + obounds.height) >= 0 ? e.stageY : _bounds.y;
+                                 rw = Math.abs(obounds.x - e.stageX + obounds.width);
+                                 rh = Math.abs(obounds.y - e.stageY + obounds.height);
                              } else if (r.name == 'rt') {
-                                 rx = bounds.x;
-                                 ry = e.stageY;
-                                 rw = e.stageX - bounds.x;
-                                 rh = bounds.y - e.stageY + bounds.height;
+                                 rx = Math.min(e.stageX, obounds.x);
+                                 ry = (obounds.y - e.stageY + obounds.height) >= 0 ? e.stageY : _bounds.y;
+                                 rw = Math.abs(e.stageX - obounds.x);
+                                 rh = Math.abs(obounds.y - e.stageY + obounds.height);
                              }
 
                              z.bounds.x = rx;
