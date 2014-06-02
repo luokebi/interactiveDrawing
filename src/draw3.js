@@ -20,7 +20,7 @@
          }
          this[q % 2 == 0 ? 'moveTo' : 'lineTo'](x2, y2);
          return this;
-     }
+     };
 
      createjs.Graphics.prototype.drawDashedRect = function(x1, y1, w, h, dashLen) {
          this.moveTo(x1, y1);
@@ -31,6 +31,35 @@
          this.dashedLineTo(x2, y2, x1, y2, dashLen);
          this.dashedLineTo(x1, y2, x1, y1, dashLen);
          return this;
+     };
+
+     var a = document.createElement('canvas');
+     ctx = a.getContext('2d'),
+     isSurpportSetLineDash = !!ctx.setLineDash,
+     isSurpportEllipse = !!ctx.ellipse;
+
+     delete a;
+     if (isSurpportEllipse) {
+         createjs.Graphics.prototype.drawEllipseByAngle = function(x, y, rx, ry, r, sa, ea, anti) {
+             this._dirty = this._active = true;
+             var z = this;
+             this._activeInstructions.push(new createjs.Graphics.Command(z._ctx.ellipse, [x, y, rx, ry, r, sa, ea, anti]));
+
+             return this;
+         };
+     }
+
+
+     if (isSurpportSetLineDash) {
+         createjs.Graphics.prototype.setLineDash = function(arr) {
+             if (this._active) {
+                 this._newPath();
+             }
+             var z = this;
+             this._strokeStyleInstructions.push(new createjs.Graphics.Command(z._ctx.setLineDash, [arr]));
+
+             return this;
+         };
      }
 
 
@@ -177,6 +206,12 @@
 
              stage.enableMouseOver(10);
              stage.on('stagemousedown', mouseDown, false);
+
+             var a = new createjs.Shape();
+             a.graphics.setStrokeStyle(strokeSize).setLineDash([10, 5]).beginStroke(strokeColor).drawEllipseByAngle(233, 99, 178, 70, 0, 3 / 4 * Math.PI, 2.65 * Math.PI, false).lineTo(70, 210).closePath();
+             a.shadow = new createjs.Shadow('rgba(0,0,0,.5)', 0, 2, 2);
+             stage.addChild(a);
+             stage.update();
 
              function mouseDown(e) {
                  console.info('stage mousedown', hoverShape);
@@ -469,11 +504,11 @@
          }
 
          function getWidth(text, fontSize, fontFamily) {
-            text += "m";
-            var temp_text = new createjs.Text(text, fontSize + ' ' + fontFamily);
-            var w = temp_text.getMeasuredWidth();
-            temp_text = null;
-            return w;
+             text += "m";
+             var temp_text = new createjs.Text(text, fontSize + ' ' + fontFamily);
+             var w = temp_text.getMeasuredWidth();
+             temp_text = null;
+             return w;
          }
 
          /** 
@@ -624,7 +659,7 @@
                      y: y + h
                  }];
 
-                  //console.log(x,y,w,h)
+             //console.log(x,y,w,h)
 
              for (var i = 0, n = handlers.length; i < n; i++) {
                  (function(i) {
@@ -638,12 +673,12 @@
                          r.cursor = h.cursor;
                          z.handlers[h.name] = r;
                          var obounds = {};
-                         r.on('mousedown', function () {
-                            obounds = cloneObj(z.bounds);
-                         },false);
+                         r.on('mousedown', function() {
+                             obounds = cloneObj(z.bounds);
+                         }, false);
 
                          r.on('pressmove', function(e) {
-                            console.log(r.name);
+                             console.log(r.name);
                              var _bounds = cloneObj(z.bounds);
                              var rx, ry, rw, rh;
                              if (r.name == 'rb') {
@@ -655,7 +690,7 @@
                                  rx = (obounds.x - e.stageX + obounds.width) >= 0 ? e.stageX : _bounds.x;
                                  ry = Math.min(e.stageY, obounds.y);
                                  rw = Math.abs(obounds.x - e.stageX + obounds.width);
-                                 rh = Math.abs(e.stageY - obounds.y);                               
+                                 rh = Math.abs(e.stageY - obounds.y);
                              } else if (r.name == 'lt') {
                                  rx = (obounds.x - e.stageX + obounds.width) >= 0 ? e.stageX : _bounds.x;
                                  ry = (obounds.y - e.stageY + obounds.height) >= 0 ? e.stageY : _bounds.y;
@@ -1208,7 +1243,12 @@
 
          DashedRect.prototype.rePaint = function() {
              var z = this;
-             z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").beginStroke(this.strokeColor).drawDashedRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height, 15);
+             if (isSurpportSetLineDash) {
+                 z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").setLineDash([10]).beginStroke(this.strokeColor).drawRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+             } else {
+                 z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").beginStroke(this.strokeColor).drawDashedRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height, 15);
+             }
+
              z.shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
          };
 
@@ -1291,7 +1331,12 @@
 
          DashedLine.prototype.rePaint = function() {
              var z = this;
-             z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor).dashedLineTo(z.startX, z.startY, z.endX, z.endY, 10);
+             if (isSurpportSetLineDash) {
+                 z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").setLineDash([10]).beginStroke(z.strokeColor).moveTo(z.startX, z.startY).lineTo(z.endX, z.endY);
+             } else {
+                 z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor).dashedLineTo(z.startX, z.startY, z.endX, z.endY, 10);
+             }
+
          };
 
 
@@ -1325,7 +1370,12 @@
          DashedArrow.prototype.rePaint = function() {
              var z = this;
              var angle = Math.atan2(z.endY - z.startY, z.endX - z.startX) * 180 / Math.PI;
-             this.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor).dashedLineTo(z.startX, z.startY, z.endX, z.endY, 10).setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, z.strokeSize * 2.5, 3, 0.5, angle);
+             if (isSurpportSetLineDash) {
+                 this.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").setLineDash([10]).beginStroke(z.strokeColor).lineTo(z.startX, z.startY).lineTo(z.endX, z.endY).setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, z.strokeSize * 2, 3, 0.5, angle);
+             } else {
+                 this.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor).dashedLineTo(z.startX, z.startY, z.endX, z.endY, 10).setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, z.strokeSize * 2.5, 3, 0.5, angle);
+             }
+
          };
 
          /** 
@@ -1357,7 +1407,11 @@
          DoubleDashedArrow.prototype.rePaint = function() {
              var z = this;
              var angle = Math.atan2(z.endY - z.startY, z.endX - z.startX) * 180 / Math.PI;
-             this.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor).dashedLineTo(z.startX, z.startY, z.endX, z.endY, 10).setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, z.strokeSize * 2.5, 3, 0.5, angle).drawPolyStar(z.startX, z.startY, z.strokeSize * 2, 3, 0.5, 180 + angle);
+             if (isSurpportSetLineDash) {
+                 this.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").setLineDash([10]).beginStroke(z.strokeColor).lineTo(z.startX, z.startY).lineTo(z.endX, z.endY).setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, z.strokeSize * 2, 3, 0.5, angle).drawPolyStar(z.startX, z.startY, z.strokeSize * 2, 3, 0.5, 180 + angle);
+             } else {
+                 this.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor).dashedLineTo(z.startX, z.startY, z.endX, z.endY, 10).setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, z.strokeSize * 2.5, 3, 0.5, angle).drawPolyStar(z.startX, z.startY, z.strokeSize * 2, 3, 0.5, 180 + angle);
+             }
          };
 
 
