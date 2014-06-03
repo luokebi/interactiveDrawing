@@ -70,22 +70,22 @@
 
      var paintBoard = PB = {};
      PB.createBoard = function(canvas) {
-         var shapeType = 'rect';
-         strokeColor = '#f00',
-         fontSize = '24px',
-         fontFamily = "Arial",
-         alpha = 1,
-         strokeSize = 8,
-         creating = false,
-         hoverShape = false,
-         modifyText = false,
-         selectedShape = null,
-         temp_input = document.createElement('textarea'),
-         mouseX = 0,
-         mouseY = 0,
-         stageX = 0,
-         stageY = 0,
-         board = null;
+         var shapeType = 'rect',
+             strokeColor = '#f00',
+             fontSize = '24px',
+             fontFamily = "Arial",
+             alpha = 1,
+             strokeSize = 8,
+             creating = false,
+             hoverShape = false,
+             modifyText = false,
+             selectedShape = null,
+             temp_input = document.createElement('textarea'),
+             mouseX = 0,
+             mouseY = 0,
+             stageX = 0,
+             stageY = 0,
+             board = null;
 
          function Board(canvas) {
              this.canvas = document.getElementById(canvas);
@@ -180,7 +180,7 @@
                  selectedShape.rePaint();
                  this.stage.update();
              }
-             fontFamily = size;
+             fontFamily = f;
              return this;
          };
 
@@ -242,7 +242,7 @@
                          var s = new Ellipse(e.stageX, e.stageY);
                          break;
                      case 's-b':
-                         var s = new speechBubble(e.stageX, e.stageY);
+                         var s = new speechBubble2(e.stageX, e.stageY);
                          break;
                      case 'r-rect':
                          var s = new RoundRect(e.stageX, e.stageY);
@@ -298,6 +298,10 @@
                          s.bounds.height = Math.abs(e.stageY - originalY);
                          s.bounds.x = Math.min(originalX, e.stageX);
                          s.bounds.y = Math.min(originalY, e.stageY);
+                         if (s.subType == 'callout') {
+                            s.calloutPointX = s.bounds.x + 10;
+                            s.calloutPointY = s.bounds.y + s.bounds.height + 20;
+                         }
                      } else if (s._type == 'line') {
                          s.endX = e.stageX;
                          s.endY = e.stageY;
@@ -512,7 +516,7 @@
          }
 
          /** 
-         * Shape, Line shape, Free shape, Text, Image shape
+         * Basic Shapes: Shape, Line shape, Free shape, Text, Image shape
          =================================================*/
 
          // Shape
@@ -659,6 +663,15 @@
                      y: y + h
                  }];
 
+             if (z.subType == 'callout') {
+                 handlers.push({
+                     name: 'cp',
+                     cursor: 'move',
+                     x: z.calloutPointX,
+                     y: z.calloutPointY
+                 });
+             }
+
              //console.log(x,y,w,h)
 
              for (var i = 0, n = handlers.length; i < n; i++) {
@@ -701,12 +714,19 @@
                                  ry = (obounds.y - e.stageY + obounds.height) >= 0 ? e.stageY : _bounds.y;
                                  rw = Math.abs(e.stageX - obounds.x);
                                  rh = Math.abs(obounds.y - e.stageY + obounds.height);
+                             } else if (r.name == 'cp') {
+                                 z.calloutPointX = e.stageX;
+                                 z.calloutPointY = e.stageY;
+                                 z.sAngle = Math.abs(z.bounds.x + z.bounds.width/2 - z.calloutPointX) / 
                              }
 
-                             z.bounds.x = rx;
-                             z.bounds.y = ry;
-                             z.bounds.width = rw;
-                             z.bounds.height = rh;
+                             if (r.name != 'cp') {
+                                z.bounds.x = rx;
+                                z.bounds.y = ry;
+                                z.bounds.width = rw;
+                                z.bounds.height = rh;
+                             }
+                             
 
                              z.rePaint();
                              z.drawHandlers();
@@ -1215,6 +1235,20 @@
          };
 
 
+         // Call out Shape
+
+         function CallOutShape(x, y) {
+             this.subType = 'callout';
+             this.calloutPointX = x;
+             this.calloutPointY = y;
+             this.sAngle = 135/180 * Math.PI;
+             this.eAngle = 475/180 * Math.PI;
+             Shape.apply(this, arguments);
+         }
+
+         extend(CallOutShape, Shape);
+
+
          /** 
          * Rectangle
          =================================================*/
@@ -1287,21 +1321,39 @@
 
 
          /** 
-         * speech bubble
+         * Speech bubble 1 (circle)
          =================================================*/
 
-         function speechBubble(x, y) {
-             Shape.apply(this, arguments);
+         function speechBubble1(x, y) {
+             CallOutShape.apply(this, arguments);
              this.shape.shadow = new createjs.Shadow('rgba(0,0,0,.5)', 2, 2, 4);
          };
 
-         extend(speechBubble, Shape);
+         extend(speechBubble1, CallOutShape);
 
-         speechBubble.prototype.rePaint = function() {
+         speechBubble1.prototype.rePaint = function() {
              var z = this;
              z.shape.graphics.clear().beginFill(this.strokeColor).drawEllipse(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height).endStroke();
              z.shape.graphics.beginFill(this.strokeColor).drawCircle(z.bounds.x + z.bounds.width / 5, z.bounds.y + z.bounds.height + z.bounds.height / 8, z.bounds.height / 8).endFill().beginFill(this.strokeColor).drawCircle(z.bounds.x + z.bounds.width / 5 - (z.bounds.height / 15 + z.bounds.height / 8 + 10), z.bounds.y + z.bounds.height + z.bounds.height / 8 + z.bounds.height / 15 + 15, z.bounds.height / 15);
              z.shape.hitArea.graphics.clear().beginFill("#FFF").drawEllipse(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+         };
+
+         /** 
+         * Speech bubble1 2 (arrow)
+         =================================================*/
+
+         function speechBubble2(x, y) {
+             CallOutShape.apply(this, arguments);
+         }
+
+         extend(speechBubble2, CallOutShape);
+
+         speechBubble2.prototype.rePaint = function() {
+             var z = this;
+             var cx = z.bounds.width/2 + z.bounds.x,
+                cy = z.bounds.height/2 + z.bounds.y; 
+             z.shape.graphics.clear().beginFill(z.strokeColor).drawEllipseByAngle(cx, cy, z.bounds.width/2, z.bounds.height/2, 0, z.sAngle, z.eAngle, false).lineTo(z.calloutPointX, z.calloutPointY).closePath();
+             z.shape.hitArea.graphics.clear().beginFill("#FFF").drawEllipseByAngle(cx, cy, z.bounds.width/2, z.bounds.height/2, 0, z.sAngle, z.eAngle, false).lineTo(z.calloutPointX, z.calloutPointY).closePath();
          };
 
          /** 
@@ -1505,7 +1557,6 @@
              s.width = z.bounds.width;
              s.height = z.bounds.height;
          };
-
 
          init();
 
