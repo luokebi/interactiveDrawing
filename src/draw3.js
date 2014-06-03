@@ -577,7 +577,9 @@
                      x: z.shape.x,
                      y: z.shape.y,
                      strokeColor: z.strokeColor,
-                     strokeSize: z.strokeSize
+                     strokeSize: z.strokeSize,
+                     cx: z.calloutPointX,
+                     cy: z.calloutPointY
                  };
 
                  z._startX = e.stageX;
@@ -605,6 +607,10 @@
 
                  var prev_bounds = z.backup.bounds;
                  z.setBounds(prev_bounds.x + moveX, prev_bounds.y + moveY, prev_bounds.width, prev_bounds.height);
+                 if (z.calloutPointX) {
+                    z.calloutPointX = z.backup.cx + moveX;
+                    z.calloutPointY = z.backup.cy + moveY;
+                 }
                  z.rePaint();
                  z.drawHandlers();
                  s.getStage().update();
@@ -717,7 +723,14 @@
                              } else if (r.name == 'cp') {
                                  z.calloutPointX = e.stageX;
                                  z.calloutPointY = e.stageY;
-                                 z.sAngle = Math.abs(z.bounds.x + z.bounds.width/2 - z.calloutPointX) / 
+                                 var a = z.calloutPointX - (z.bounds.x + z.bounds.width/2);
+                                 var b = z.calloutPointY - (z.bounds.y + z.bounds.height/2);
+                                 var c = 1;
+                                 var d = 0;
+
+                                 z.sAngle = Math.acos((a*c + b*d)/(Math.sqrt(Math.pow(a,2) + Math.pow(b,2)) + Math.sqrt(Math.pow(c,2) + Math.pow(d,2)))) + Math.PI/18 ;
+                                 console.log(Math.acos((a*c + b*d)/(Math.sqrt(Math.pow(a,2) + Math.pow(b,2)) + Math.sqrt(Math.pow(c,2) + Math.pow(d,2))))/ Math.PI);
+                                 z.eAngle = z.sAngle + (2-1/9)*Math.PI;
                              }
 
                              if (r.name != 'cp') {
@@ -766,8 +779,12 @@
                          x: h.x,
                          y: h.y
                      }
-
-                     r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 6);
+                     if (r.name == 'cp') {
+                        r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('yellow').drawCircle(h.x, h.y, 4);
+                     } else {
+                        r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 6);
+                     }
+                     
                      z.shape.getStage().update();
                  })(i);
              }
