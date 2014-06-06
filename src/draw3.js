@@ -120,6 +120,8 @@
 
                  stage.addChild(img.shape);
                  stage.update();
+
+                 return img.shape;
              }
 
              return this;
@@ -323,7 +325,7 @@
 
                      s.rePaint(angle);
 
-
+                    window.freeline = s;
 
                      stage.update();
                  }
@@ -335,7 +337,7 @@
                              stage.removeChild(s);
                          }
                          creating = false;
-
+                        freeline.smooth();
                          stage.off('stagemousemove', mousemove, false);
                      }
                  }
@@ -730,15 +732,15 @@
                                  if (a >= 0 && b >= 0) {
                                      angle = Math.PI / 2 - angle;
                                  } else if (a >= 0 && b <= 0) {
-                                     angle = Math.PI * 1.5 + angle; 
+                                     angle = Math.PI * 1.5 + angle;
                                  } else if (a <= 0 && b >= 0) {
                                      angle = Math.PI / 2 + angle;
                                  } else if (a <= 0 && b <= 0) {
-                                     angle = Math.PI * 1.5 - angle; 
+                                     angle = Math.PI * 1.5 - angle;
                                  }
 
-                                 z.sAngle = angle + Math.PI/18;
-                                 z.eAngle = angle - Math.PI/18;
+                                 z.sAngle = angle + Math.PI / 18;
+                                 z.eAngle = angle - Math.PI / 18;
                              }
 
                              if (r.name != 'cp') {
@@ -1208,8 +1210,8 @@
                  s = z.shape;
 
              s.cursor = "move";
-             s.scaleX = 0.5;
-             s.scaleY = 0.5;
+             s.scaleX = 0.3;
+             s.scaleY = 0.3;
 
              s.addEventListener('mouseover', function() {
                  hoverShape = true;
@@ -1271,22 +1273,22 @@
              Shape.apply(this, arguments);
              var z = this;
 
-             this.shape.on('click', function(){
-                var offset = getOffset(board.canvas);
-                var cx = z.bounds.x + z.bounds.width/2;
-                var cy = z.bounds.y + z.bounds.height/2;
-                var sx = -Math.sqrt(2) * z.bounds.width / 4 + cx;
-                var sy = -Math.sqrt(2) * z.bounds.height / 4 + cy;
+             this.shape.on('click', function() {
+                 var offset = getOffset(board.canvas);
+                 var cx = z.bounds.x + z.bounds.width / 2;
+                 var cy = z.bounds.y + z.bounds.height / 2;
+                 var sx = -Math.sqrt(2) * z.bounds.width / 4 + cx;
+                 var sy = -Math.sqrt(2) * z.bounds.height / 4 + cy;
 
-                var dx = sx + offset.left + 10;
-                var dy = sy + offset.top + 10;
-                temp_input.style.left = dx + 'px';
-                temp_input.style.top = dy + 'px';
-                temp_input.style.width = Math.sqrt(2) * z.bounds.width / 2 - 20 + 'px';
-                temp_input.style.height = Math.sqrt(2) * z.bounds.height / 2 - 20 + 'px';
-                temp_input.style.color = '#fff';
-                temp_input.style.fontSize = '14px';
-                temp_input.style.display = 'block';
+                 var dx = sx + offset.left + 10;
+                 var dy = sy + offset.top + 10;
+                 temp_input.style.left = dx + 'px';
+                 temp_input.style.top = dy + 'px';
+                 temp_input.style.width = Math.sqrt(2) * z.bounds.width / 2 - 20 + 'px';
+                 temp_input.style.height = Math.sqrt(2) * z.bounds.height / 2 - 20 + 'px';
+                 temp_input.style.color = '#fff';
+                 temp_input.style.fontSize = '14px';
+                 temp_input.style.display = 'block';
              }, false);
          }
 
@@ -1307,6 +1309,7 @@
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").beginStroke(this.strokeColor).drawRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
              z.shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+             //z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").beginStroke(this.strokeColor).decodePath('M 0 0 L 200 100 L 170 200 z');
          };
 
          /** 
@@ -1522,15 +1525,81 @@
 
          extend(FreeLine, FreeShape);
 
+         /*FreeLine.prototype.smooth = function() {
+             var z = this;
+             z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
+             // z.shape.graphics.moveTo(z.points[0].x, z.points[0].y);
+             // for (var i = 1, n = z.points.length - 2; i < n; i++) {
+             //     var p = z.points[i];
+             //     var xc = (p.x + z.points[i + 1].x) / 2;
+             //     var yc = (z.points[i].y + z.points[i + 1].y) / 2;
+             //     z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, xc, yc);
+
+             // }
+
+             //z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, z.points[i+1].x,z.points[i+1].y);
+             var dist = function(a, b) {
+                 var x = a.x - b.x;
+                 var y = a.y - b.y;
+                 return x * x + y * y;
+             };
+             var _p = [];
+
+             var last = z.points[z.points.length - 1];
+             for (var j = 0; j < 5; j++) {
+                 _p.push(z.points[0]);
+             }
+             for (var i = 0; i < z.points.length - 1; i++) {
+                 var p = z.points[i];
+                 if (dist(p, last) > 16 * 16) {
+                     _p.push(p);
+                 }
+             }
+
+                 var a = 0.2;
+                 var p = _p[_p.length - 1]
+                 var p1 = _p[_p.length - 2];
+                 _p[_p.length - 1] = {
+                     x: p.x * a + p1.x * (1 - a),
+                     y: p.y * a + p1.y * (1 - a)
+                 }
+
+             console.log(_p);
+             for (var k = 0; k < _p.length; k++) {
+                 z.shape.graphics.lineTo(_p[k].x, _p[k].y);
+             }
+         };*/
+
          FreeLine.prototype.rePaint = function() {
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
-             for (var i = 0, n = z.points.length; i < n; i++) {
+             z.shape.graphics.moveTo(z.points[0].x, z.points[0].y);
+             for (var i = 1,n = z.points.length - 3; i < n; i++) {
                  var p = z.points[i];
+                 var xc = (p.x + z.points[i + 1].x) / 2;
+                 var yc = (z.points[i].y + z.points[i + 1].y) / 2;
+                 z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, xc, yc);
 
-                 z.shape.graphics.lineTo(p.x, p.y);
              }
+             if (i > 1) {
+                z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, z.points[i+1].x,z.points[i+1].y);
+             }
+             
+
+
          };
+
+
+         FreeLine.prototype.smooth = function () {
+            var z = this;
+            z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
+            for(var i = 0; i<z.points.length;i+=4) {
+                var p = z.points[i];
+                 var xc = (p.x + z.points[i + 1].x) / 2;
+                 var yc = (z.points[i].y + z.points[i + 1].y) / 2;
+                 z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, xc, yc);
+            }
+         }
 
          /** 
          * Free arrow.
@@ -1545,10 +1614,16 @@
          FreeArrow.prototype.rePaint = function(angle) {
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
-             for (var i = 0, n = z.points.length; i < n; i++) {
+             z.shape.graphics.moveTo(z.points[0].x, z.points[0].y);
+             for (var i = 1,n = z.points.length - 3; i < n; i++) {
                  var p = z.points[i];
+                 var xc = (p.x + z.points[i + 1].x) / 2;
+                 var yc = (z.points[i].y + z.points[i + 1].y) / 2;
+                 z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, xc, yc);
 
-                 z.shape.graphics.lineTo(p.x, p.y);
+             }
+             if (i > 1) {
+                z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, z.points[i+1].x,z.points[i+1].y);
              }
 
              z.shape.graphics.endStroke().setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, 8 * 2.5, 3, 0.5, angle);

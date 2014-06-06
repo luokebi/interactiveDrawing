@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<canvas id="test" width="500" height="500"></canvas>
+<script type="text/javascript">
+var c = document.getElementById('test');
+var ctx = c.getContext('2d');
+var image = new Image();
+image.onload= function () {
+	ctx.drawImage(image, 0,0,image.width,image.height,0,0,1300,1300);		
+};
+
+image.src = "assets/heart.svg";
+</script>
+<script type="text/javascript" src="getPoints.js"></script>
+</body>
+</html>
