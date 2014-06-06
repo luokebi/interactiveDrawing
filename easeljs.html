@@ -90,8 +90,13 @@
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
 <!-- <script type="text/javascript" src="bootstrap.min.js"></script> -->
 <!-- <script type="text/javascript" src="main.js"></script> -->
-<script type="text/javascript" src="getPoints.js"></script>
-<script type="text/javascript" src="src/draw3.js"></script>
+<script type="text/javascript" src="src/draw4.js"></script>
+<script type="text/javascript" src="src/Utils.js"></script>
+<script type="text/javascript" src="src/shapes/Shape.js"></script>
+<script type="text/javascript" src='src/shapes/BoundShape.js'></script>
+<script type="text/javascript" src="src/shapes/Rect.js"></script>
+<script type="text/javascript" src='src/shapes/LineShape.js'></script>
+
 <!-- <script type="text/javascript" src="src/paintBoard.min.js"></script> -->
 <script type="text/javascript">
 	var bgCanvas = document.getElementById('bg');
@@ -102,13 +107,17 @@
                  ctx.drawImage(image, 0,0, 1000, 500);
         };
 	
-	var p = paintBoard.createBoard('draw');
+	var p = new paintBoard.Board('draw');
 	//var pb = new PaintBoard('test');
 
 	$('#actions').find('.btn').on('click', function() {
 		$('.btn').removeClass('active');
 		p.setShapeType($(this).addClass('active').attr('id'));
 });
+
+	$('#insert-pic').on('click', function () {
+		p.insert('assets/10.svg');
+	})
 </script>
 <script type="text/javascript" src="pathParser.js"></script>
 </body>

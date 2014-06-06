@@ -116,7 +116,7 @@
              image.onload = onloadHandler;
 
              function onloadHandler() {
-                 var img = new ImageShape(image);
+                 var img = new ImageShape(100, 100, image);
 
                  stage.addChild(img.shape);
                  stage.update();
@@ -426,10 +426,10 @@
 
 
          function extend(Child, Parent) {
-             var F = function() {};　　　　
-             F.prototype = Parent.prototype;　　　　
-             Child.prototype = new F();　　　　
-             Child.prototype.constructor = Child;　　　　
+             var F = function() {};
+             F.prototype = Parent.prototype;
+             Child.prototype = new F();
+             Child.prototype.constructor = Child;
              Child.uber = Parent.prototype;
          }
 
@@ -1197,15 +1197,33 @@
          };
 
          // Image shape
-         function ImageShape(image) {
+         function ImageShape(x, y, image) {
              this.x = 100;
              this.y = 100;
+             Shape.apply(this, arguments);
              this.shape = new createjs.Bitmap(image);
 
-             this.init();
+             this.init2();
          }
 
-         ImageShape.prototype.init = function() {
+         extend(ImageShape, Shape);
+
+         ImageShape.prototype.init2 = function () {
+            this.init();
+            this.shape.hitArea = null;
+            this.shape.cursor = 'move';
+            this.bounds.width = 100;
+            this.bounds.height = 100;
+            window.svg = this.shape;
+         }
+
+         ImageShape.prototype.rePaint = function () {
+            var z = this;
+            this.shape.scaleX = z.backup.bounds.width/z.bounds.width;
+            this.shape.scaleY = z.backup.bounds.height/z.bounds.height;
+         }
+
+         /*ImageShape.prototype.init = function() {
              var z = this,
                  s = z.shape;
 
@@ -1253,7 +1271,7 @@
              }, false);
 
 
-         };
+         };*/
 
          ImageShape.prototype.bringToTop = function() {
              bringToTop.call(this);
