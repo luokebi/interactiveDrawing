@@ -5,6 +5,7 @@
                 this.strokeSize = conf.strokeSize;
                 this.alpha = conf.alpha;
                 this.handlers = [];
+                this.selected = false;
         }
 
         Shape.prototype.bringToTop = function() {

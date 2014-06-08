@@ -1,0 +1,9 @@
+.project
+.DS_Store
+dist/*
+.tmp_*
+.svn
+.pydevproject
+build
+node_modules
+.idea

@@ -7,7 +7,7 @@
                         width: 0,
                         height: 0
                 };
-                this.shape.baseType = 'BoundShape';
+                this.baseType = 'BoundShape';
                 PB.Shape.apply(this, arguments);
         }
 
@@ -76,6 +76,7 @@
                                         r._type = 'handler';
                                         r.name = h.name;
                                         r.cursor = h.cursor;
+                                        r.shadow = new createjs.Shadow(PB.HANDLER_SHADOW, 0,2,1);
                                         z.handlers[h.name] = r;
                                         var obounds = {};
                                         r.on('mousedown', function() {
@@ -150,7 +151,7 @@
                                 if (r.name == 'cp') {
                                         r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('yellow').drawCircle(h.x, h.y, 4);
                                 } else {
-                                        r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('#fff').drawCircle(h.x, h.y, 6);
+                                        r.graphics.clear().beginFill('#fff').drawCircle(h.x, h.y, 8).beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);
                                 }
 
                                 z.shape.getStage().update();

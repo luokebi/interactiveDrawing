@@ -1,4 +1,4 @@
-(function(PB) {
+;(function(PB) {
 	var Utils = {};
 	function extend(Child, Parent) {
 		var F = function() {};
@@ -85,6 +85,8 @@
 	Utils.cloneObj = cloneObj;
 	Utils.cloneArray = cloneArray;
 	Utils.autoExpand = autoExpand;
+	Utils.fixTextarea = fixTextarea;
+	Utils.getOffset = getOffset;
 
 	PB.Utils = Utils;
-})(paintBoard)
+})(paintBoard);

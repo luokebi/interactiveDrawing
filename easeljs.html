@@ -75,10 +75,16 @@
 	<button class="btn btn-primary" id="text">Text</button>
 	<button class="btn btn-primary" id="blur" >Blur</button>
 </div>
-</div>
 <div class="btn-group">
-	<button class="btn btn-primary" id="insert-pic">Insert pic</button>
+	<img style="height:50px; width:50px; " src="assets/10.svg" id="pic" class="btn pic">
+	<img style="height:50px; width:50px; " src="assets/17.svg" id="pic" class="btn pic">
+	<img style="height:50px; width:50px; " src="assets/90.svg" id="pic" class="btn pic">
+	<img style="height:50px; width:50px; " src="assets/32.svg" id="pic" class="btn pic">
+	<img style="height:50px; width:50px; " src="assets/19.svg" id="pic" class="btn pic">
+
 </div>
+</div>
+
 <div class="btn-group">
 <button class="btn btn-primary" id="off">Undo</button>
 <button class="btn btn-primary" id="on">Redo</button>
@@ -88,16 +94,29 @@
 
 <script type="text/javascript" src="easeljs-0.7.1.min.js"></script>
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
-<!-- <script type="text/javascript" src="bootstrap.min.js"></script> -->
-<!-- <script type="text/javascript" src="main.js"></script> -->
-<script type="text/javascript" src="src/draw4.js"></script>
+<script type="text/javascript" src="bootstrap.min.js"></script>
+<script type="text/javascript" src="src/easeljs-patch.js"></script>
+<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="src/bootstrap.js"></script>
+<script type="text/javascript" src="src/Board.js"></script>
 <script type="text/javascript" src="src/Utils.js"></script>
 <script type="text/javascript" src="src/shapes/Shape.js"></script>
 <script type="text/javascript" src='src/shapes/BoundShape.js'></script>
-<script type="text/javascript" src="src/shapes/Rect.js"></script>
 <script type="text/javascript" src='src/shapes/LineShape.js'></script>
+<script type="text/javascript" src="src/shapes/Rect.js"></script>
+<script type="text/javascript" src="src/shapes/RoundRect.js"></script>
+<script type="text/javascript" src="src/shapes/DashedRect.js"></script>
+<script type="text/javascript" src="src/shapes/Ellipse.js"></script>
+<script type="text/javascript" src="src/shapes/Line.js"></script>
+<script type="text/javascript" src="src/shapes/Arrow.js"></script>
+<script type="text/javascript" src="src/shapes/FreeLine.js"></script>
+<script type="text/javascript" src="src/shapes/FreeArrow.js"></script>
+<script type="text/javascript" src="src/shapes/Text.js"></script>
+<script type="text/javascript" src="src/shapes/Pic.js"></script>
+<script type="text/javascript" src="src/shapes/Blur.js"></script>
 
-<!-- <script type="text/javascript" src="src/paintBoard.min.js"></script> -->
+
+<!-- <script type="text/javascript" src="build/paintBoard.min.js"></script> -->
 <script type="text/javascript">
 	var bgCanvas = document.getElementById('bg');
 	var ctx = bgCanvas.getContext('2d');
@@ -115,9 +134,9 @@
 		p.setShapeType($(this).addClass('active').attr('id'));
 });
 
-	$('#insert-pic').on('click', function () {
-		p.insert('assets/10.svg');
-	})
+	$('.pic').on('click', function () {
+		p.setInsertImage(this.src);
+	});
 </script>
 <script type="text/javascript" src="pathParser.js"></script>
 </body>

@@ -1,0 +1,29 @@
+{
+  "name": "paintBoard",
+  "version": "1.0.0",
+  "description": "A paint board javascript lib based on Easeljs",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luokebi/interactiveDrawing.git"
+  },
+  "keywords": [
+    "easeljs",
+    "interactive",
+    "drawing"
+  ],
+  "author": "luo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luokebi/interactiveDrawing/issues"
+  },
+  "homepage": "https://github.com/luokebi/interactiveDrawing",
+  "devDependencies": {
+    "gulp-concat": "~2.2.0",
+    "gulp-uglify": "~0.3.0",
+    "gulp": "~3.7.0"
+  }
+}
