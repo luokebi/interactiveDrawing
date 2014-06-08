@@ -72,18 +72,20 @@
 
                                 var r = z.handlers[h.name];
                                 if (!r) {
-                                        var r = new createjs.Shape();
+                                        var r = new createjs.Container();
+                                        r.addChild(new createjs.Shape());
+                                        r.addChild(new createjs.Shape());
                                         r._type = 'handler';
                                         r.name = h.name;
-                                        r.cursor = h.cursor;
-                                        r.shadow = new createjs.Shadow(PB.HANDLER_SHADOW, 0,2,1);
+                                        r.children[1].cursor = h.cursor;
+                                        r.children[0].shadow = new createjs.Shadow(PB.HANDLER_SHADOW, 0,2,1);
                                         z.handlers[h.name] = r;
                                         var obounds = {};
-                                        r.on('mousedown', function() {
+                                        r.children[1].on('mousedown', function() {
                                                 obounds = PB.Utils.cloneObj(z.bounds);
                                         }, false);
 
-                                        r.on('pressmove', function(e) {
+                                        r.children[1].on('pressmove', function(e) {
                                                 console.log(r.name);
                                                 var _bounds = PB.Utils.cloneObj(z.bounds);
                                                 var rx, ry, rw, rh;
@@ -151,7 +153,9 @@
                                 if (r.name == 'cp') {
                                         r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('yellow').drawCircle(h.x, h.y, 4);
                                 } else {
-                                        r.graphics.clear().beginFill('#fff').drawCircle(h.x, h.y, 8).beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);
+                                        r.children[0].graphics.clear().beginFill('#fff').drawCircle(h.x, h.y, 8);
+                                        r.children[1].graphics.clear().beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);
+                                        //r.graphics.clear().setStrokeStyle(1).beginStroke('#fff').beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);
                                 }
 
                                 z.shape.getStage().update();

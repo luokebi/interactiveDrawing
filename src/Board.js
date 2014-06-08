@@ -1,4 +1,5 @@
-;(function(createjs, PB) {
+;
+(function(createjs, PB) {
 	function Board(canvas) {
 		var config = {
 			strokeColor: '#f00',
@@ -13,12 +14,13 @@
 			modifyText = false,
 			selectedShape = null,
 			temp_input = document.createElement('textarea'),
-			mouseX = 0,
-			mouseY = 0,
-			stageX = 0,
-			stageY = 0,
-			selectImage = null,
-			board = this;
+			scaleLevel = 1;
+		mouseX = 0,
+		mouseY = 0,
+		stageX = 0,
+		stageY = 0,
+		selectImage = null,
+		board = this;
 
 
 		var stage = new createjs.Stage(canvas);
@@ -106,7 +108,7 @@
 						break;
 
 				}
-				console.log(s);
+				console.log(s, o);
 
 				if (o === null && shapeType !== 'pic') {
 					creating = true;
@@ -455,6 +457,16 @@
 			selectedShape = null;
 		};
 
+		Board.prototype.setAlpha = function(al) {
+			if (selectedShape) {
+				selectedShape.alpha = al;
+				selectedShape.rePaint();
+				this.stage.update();
+			}
+			alpha = al;
+			return this;
+		};
+
 		Board.prototype.setShapeType = function(type) {
 			shapeType = type;
 			return this;
@@ -477,6 +489,68 @@
 		Board.prototype.setInsertImage = function(src) {
 			insetImageSrc = src;
 			return this;
+		};
+
+		Board.prototype.setStokeSize = function(size) {
+			if (selectedShape) {
+				selectedShape.strokeSize = size;
+				selectedShape.rePaint();
+				this.stage.update();
+			}
+			config.strokeSize = size;
+			return this;
+		};
+
+		Board.prototype.setFontSize = function(size) {
+			if (selectedShape) {
+				selectedShape.fontSize = size;
+				selectedShape.rePaint();
+				this.stage.update();
+			}
+			config.fontSize = size;
+			return this;
+		};
+
+		Board.prototype.setFontFamily = function(f) {
+			if (selectedShape) {
+				selectedShape.fontFamily = f;
+				selectedShape.rePaint();
+				this.stage.update();
+			}
+			config.fontFamily = f;
+			return this;
+		};
+
+		Board.prototype.zoomIn = function() {
+			if (scaleLevel < 1.75) {
+				scaleLevel += 0.25;
+				this.canvas.style.webkitTransform = "scale(" + scaleLevel + ")";
+			}
+			return this;
+		};
+
+		Board.prototype.zoomOut = function() {
+			if (scaleLevel > 0.25) {
+				scaleLevel -= 0.25;
+				this.canvas.style.webkitTransform = "scale(" + scaleLevel + ")";
+			}
+			return this;
+		};
+
+		Board.prototype.setZoomLevel = function(level) {
+			if (0 < scaleLevel < 2) {
+				scaleLevel = level;
+				this.canvas.style.webkitTransform = "scale(" + scaleLevel + ")";
+			}
+			return this;
+		};
+
+		Board.prototype.getZoomLevel = function() {
+			return scaleLevel;
+		};
+
+		Board.prototype.toDataURL = function(mimeType) {
+			return this.stage.toDataURL(null, mimeType);
 		};
 
 		init();

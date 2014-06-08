@@ -27,7 +27,6 @@
 		z.shape.y = z.bounds.y;
 		z.shape.scaleX = z.bounds.width / z.shape.width;
 		z.shape.scaleY = z.bounds.height / z.shape.height;
-		console.log(z.bounds.width);
 		z.shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, z.bounds.width/z.shape.scaleX, z.bounds.height/z.shape.scaleY);
 	};
 
