@@ -90,6 +90,7 @@
          function Board(canvas) {
              this.canvas = document.getElementById(canvas);
              this.stage = new createjs.Stage(canvas);
+             this.container = new createjs.Container();
          }
 
          Board.prototype.unSelect = function() {
@@ -102,7 +103,12 @@
                  }
              }
 
+             stage.removeChild(selectedShape);
+             this.container.addChild(selectedShape.shape);
              s.shape.shadow = null;
+             this.container.updateCache();
+
+             
              s.selected = false;
              stage.update();
              selectedShape = null;
@@ -203,17 +209,19 @@
          function init() {
              board = new Board(canvas);
              var stage = board.stage;
+             var container = board.container;
+             stage.addChild(container);
 
              insertInput();
 
              stage.enableMouseOver(10);
              stage.on('stagemousedown', mouseDown, false);
 
-             var a = new createjs.Shape();
+             /*var a = new createjs.Shape();
              a.graphics.setStrokeStyle(strokeSize).setLineDash([10, 5]).beginStroke(strokeColor).drawEllipseByAngle(233, 99, 178, 70, 0, 3 / 4 * Math.PI, 2.65 * Math.PI, false).lineTo(70, 210).closePath();
              a.shadow = new createjs.Shadow('rgba(0,0,0,.5)', 0, 2, 2);
              stage.addChild(a);
-             stage.update();
+             stage.update();*/
 
              function mouseDown(e) {
                  console.info('stage mousedown', hoverShape);
@@ -289,6 +297,7 @@
                  console.log(s);
 
                  stage.addChild(s.shape);
+                 //container.updateCache();
 
                  stage.addEventListener('stagemousemove', mousemove, false);
                  stage.addEventListener('stagemouseup', mouseup, false);
@@ -325,7 +334,7 @@
 
                      s.rePaint(angle);
 
-                     window.freeline = s;
+                     //window.freeline = s;
 
                      stage.update();
                  }
@@ -334,10 +343,14 @@
                      console.info('stage mouseup', stage.mouseInBounds);
                      if (stage.mouseInBounds) {
                          if (e.stageX == originalX && e.stageY == originalY) {
-                             stage.removeChild(s);
+                             container.removeChild(s);
+                         } else {
+                            container.cache(0,0,board.canvas.width, board.canvas.height);
                          }
+
+                         
                          creating = false;
-                         freeline.smooth();
+                         //freeline.smooth();
                          stage.off('stagemousemove', mousemove, false);
                      }
                  }
@@ -453,11 +466,11 @@
 
          function bringToTop() {
              var z = this,
-                 stage = z.shape.getStage(),
-                 index = stage.getChildIndex(z.shape),
-                 num = stage.getNumChildren();
+                 container = z.shape.parent,
+                 index = container.getChildIndex(z.shape),
+                 num = container.getNumChildren();
 
-             stage.addChildAt(z.shape, num);
+             container.addChildAt(z.shape, num);
          }
 
          function getOffset(elem) {
@@ -548,7 +561,7 @@
 
              s.cursor = 'move';
              s.alpha = alpha;
-             s.hitArea = new createjs.Shape();
+             //s.hitArea = new createjs.Shape();
 
              s.addEventListener('mouseover', function() {
                  console.info('shape mouseover');
@@ -632,6 +645,9 @@
              if (selectedShape && selectedShape.shape.id != this.shape.id) {
                  board.unSelect();
              }
+             board.container.removeChild(this.shape);
+             board.stage.addChild(this.shape);
+             board.container.updateCache();
              this.drawHandlers();
              selectedShape = this;
              this.selected = true;
@@ -1319,6 +1335,7 @@
 
          function Rect(x, y) {
              Shape.apply(this, arguments);
+             this.name = "rect";
          };
 
          extend(Rect, Shape);
@@ -1326,7 +1343,7 @@
          Rect.prototype.rePaint = function() {
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").beginStroke(this.strokeColor).drawRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
-             z.shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+             //z.shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
              //z.shape.graphics.clear().setStrokeStyle(this.strokeSize, "round", "round").beginStroke(this.strokeColor).decodePath('M 0 0 L 200 100 L 170 200 z');
          };
 
@@ -1418,7 +1435,7 @@
              var cx = z.bounds.width / 2 + z.bounds.x,
                  cy = z.bounds.height / 2 + z.bounds.y;
              z.shape.graphics.clear().beginFill(z.strokeColor).drawEllipseByAngle(cx, cy, z.bounds.width / 2, z.bounds.height / 2, 0, z.sAngle, z.eAngle, false).lineTo(z.calloutPointX, z.calloutPointY).closePath();
-             z.shape.hitArea.graphics.clear().beginFill("#FFF").drawEllipseByAngle(cx, cy, z.bounds.width / 2, z.bounds.height / 2, 0, z.sAngle, z.eAngle, false).lineTo(z.calloutPointX, z.calloutPointY).closePath();
+             //z.shape.hitArea.graphics.clear().beginFill("#FFF").drawEllipseByAngle(cx, cy, z.bounds.width / 2, z.bounds.height / 2, 0, z.sAngle, z.eAngle, false).lineTo(z.calloutPointX, z.calloutPointY).closePath();
          };
 
          /** 

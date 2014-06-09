@@ -95,8 +95,8 @@
 <script type="text/javascript" src="easeljs-0.7.1.min.js"></script>
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
 <script type="text/javascript" src="bootstrap.min.js"></script>
-<script type="text/javascript" src="src/easeljs-patch.js"></script>
-<!-- <script type="text/javascript" src="main.js"></script> -->
+<!-- <script type="text/javascript" src="src/easeljs-patch.js"></script>
+<script type="text/javascript" src="main.js"></script>
 <script type="text/javascript" src="src/bootstrap.js"></script>
 <script type="text/javascript" src="src/Board.js"></script>
 <script type="text/javascript" src="src/Utils.js"></script>
@@ -111,8 +111,8 @@
 <script type="text/javascript" src="src/shapes/FreeArrow.js"></script>
 <script type="text/javascript" src="src/shapes/Text.js"></script>
 <script type="text/javascript" src="src/shapes/Pic.js"></script>
-<script type="text/javascript" src="src/shapes/Blur.js"></script>
-
+<script type="text/javascript" src="src/shapes/Blur.js"></script> -->
+<script type="text/javascript" src="backup/draw3.js"></script>
 
 <!-- <script type="text/javascript" src="build/paintBoard.min.js"></script> -->
 <script type="text/javascript">
@@ -124,7 +124,8 @@
                  ctx.drawImage(image, 0,0, 1000, 500);
         };
 	
-	var p = new paintBoard.Board('draw');
+	//var p = new paintBoard.Board('draw');
+	var p = paintBoard.createBoard('draw');
 	//var pb = new PaintBoard('test');
 
 	$('#actions').find('.btn').on('click', function() {
