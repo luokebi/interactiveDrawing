@@ -90,7 +90,6 @@
 							var image = new Image();
 							image.src = insetImageSrc; /*"assets/tick-off.png"*/
 							image.crossOrigin = "Anonymous";
-							image.onload = onloadHandler;
 
 							function onloadHandler() {
 								var s = new PB.Pic(config, image, e.stageX, e.stageY);
@@ -100,6 +99,7 @@
 								selectedShape = s;
 								stage.update();
 							}
+							image.onload = onloadHandler;
 						}
 
 						break;
@@ -255,7 +255,6 @@
 						s.endX = e.stageX;
 						s.endY = e.stageY;
 					}
-
 					s.rePaint();
 
 					stage.update();

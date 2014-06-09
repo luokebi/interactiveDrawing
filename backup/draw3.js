@@ -325,7 +325,7 @@
 
                      s.rePaint(angle);
 
-                    window.freeline = s;
+                     window.freeline = s;
 
                      stage.update();
                  }
@@ -337,7 +337,7 @@
                              stage.removeChild(s);
                          }
                          creating = false;
-                        freeline.smooth();
+                         freeline.smooth();
                          stage.off('stagemousemove', mousemove, false);
                      }
                  }
@@ -1208,19 +1208,19 @@
 
          extend(ImageShape, Shape);
 
-         ImageShape.prototype.init2 = function () {
-            this.init();
-            this.shape.hitArea = null;
-            this.shape.cursor = 'move';
-            this.bounds.width = 100;
-            this.bounds.height = 100;
-            window.svg = this.shape;
+         ImageShape.prototype.init2 = function() {
+             this.init();
+             this.shape.hitArea = null;
+             this.shape.cursor = 'move';
+             this.bounds.width = 100;
+             this.bounds.height = 100;
+             window.svg = this.shape;
          }
 
-         ImageShape.prototype.rePaint = function () {
-            var z = this;
-            this.shape.scaleX = z.backup.bounds.width/z.bounds.width;
-            this.shape.scaleY = z.backup.bounds.height/z.bounds.height;
+         ImageShape.prototype.rePaint = function() {
+             var z = this;
+             this.shape.scaleX = z.backup.bounds.width / z.bounds.width;
+             this.shape.scaleY = z.backup.bounds.height / z.bounds.height;
          }
 
          /*ImageShape.prototype.init = function() {
@@ -1592,7 +1592,7 @@
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
              z.shape.graphics.moveTo(z.points[0].x, z.points[0].y);
-             for (var i = 1,n = z.points.length - 3; i < n; i++) {
+             for (var i = 1, n = z.points.length - 3; i < n; i++) {
                  var p = z.points[i];
                  var xc = (p.x + z.points[i + 1].x) / 2;
                  var yc = (z.points[i].y + z.points[i + 1].y) / 2;
@@ -1600,23 +1600,28 @@
 
              }
              if (i > 1) {
-                z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, z.points[i+1].x,z.points[i+1].y);
+                 z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, z.points[i + 1].x, z.points[i + 1].y);
              }
-             
+
 
 
          };
 
 
-         FreeLine.prototype.smooth = function () {
-            var z = this;
-            z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
-            for(var i = 0; i<z.points.length;i+=4) {
-                var p = z.points[i];
-                 var xc = (p.x + z.points[i + 1].x) / 2;
-                 var yc = (z.points[i].y + z.points[i + 1].y) / 2;
-                 z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, xc, yc);
-            }
+         FreeLine.prototype.smooth = function() {
+             var z = this;
+             z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
+             var a = z.points;
+             console.log('smooth');
+             var scale = 0.3;
+             var al = a.length;
+             var b = a[al - 1];
+             var next = a[al - 2];
+             a[al - 1] = {
+                 x: b.x * scale + next.x * (1 - scale),
+                 y: b.y * scale + next.y * (1 - scale)
+             };
+             z.rePaint();
          }
 
          /** 
@@ -1633,7 +1638,7 @@
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
              z.shape.graphics.moveTo(z.points[0].x, z.points[0].y);
-             for (var i = 1,n = z.points.length - 3; i < n; i++) {
+             for (var i = 1, n = z.points.length - 3; i < n; i++) {
                  var p = z.points[i];
                  var xc = (p.x + z.points[i + 1].x) / 2;
                  var yc = (z.points[i].y + z.points[i + 1].y) / 2;
@@ -1641,7 +1646,7 @@
 
              }
              if (i > 1) {
-                z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, z.points[i+1].x,z.points[i+1].y);
+                 z.shape.graphics.quadraticCurveTo(z.points[i].x, z.points[i].y, z.points[i + 1].x, z.points[i + 1].y);
              }
 
              z.shape.graphics.endStroke().setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, 8 * 2.5, 3, 0.5, angle);

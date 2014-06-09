@@ -18,9 +18,11 @@
 			s = z.shape;
 
 		s.sourceRect = new createjs.Rectangle(z.bounds.x, z.bounds.y, z.bounds.width, z.bounds.height);
+		s.image.x = z.bounds.x;
+		s.image.y = z.bounds.y;
 		s.x = z.bounds.x;
 		s.y = z.bounds.y;
-		s.cache(0, 0, z.bounds.width, z.bounds.height);
+		s.cache(-2 , -2, z.bounds.width, z.bounds.height);
 		s.width = z.bounds.width;
 		s.height = z.bounds.height;
 	};
