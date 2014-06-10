@@ -28,8 +28,8 @@
                 if (!z.selected) {
                         var stage = this.shape.getStage();
                         var index = stage.getChildIndex(this.shape);
-                        console.log(z.outline);
-                        stage.addChildAt(z.outline, index - 1);
+                        //console.log(z.outline);
+                        stage.addChildAt(z.outline, 1);
                 }
                 var outlineObj = {
                         strokeColor: '#fff',

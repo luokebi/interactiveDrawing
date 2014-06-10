@@ -119,7 +119,11 @@
 					creating = true;
 					if (selectedShape) {
 						board.unSelect();
-						return;
+						//return;
+					}
+
+					if (s) {
+						bindEventforShape(s);
 					}
 
 					stage.addEventListener('stagemousemove', mousemove, false);
@@ -129,7 +133,7 @@
 				// bind event to shapes
 
 				function bindEventforShape(s) {
-					board.container.addChild(s.shape);
+					stage.addChild(s.shape);
 					var sp = s.shape;
 					/*if (s.subType !== 'pic' && s.subType !== 'blur') {
 						sp.addEventListener('mouseover', function() {
@@ -185,6 +189,7 @@
 						board.container.removeChild(s.shape);
 						board.stage.addChild(s.shape);
 						board.container.updateCache();
+						_bringToTop();
 						s.select();
 						selectedShape = s;
 					}, false);
@@ -224,9 +229,6 @@
 					}, false);
 				}
 
-				if (s) {
-					bindEventforShape(s);
-				}
 
 				function mousemove(e) {
 					if (!s) {
@@ -274,12 +276,19 @@
 					//console.info('stage mouseup', stage.mouseInBounds);
 					if (stage.mouseInBounds) {
 						if (e.stageX == originalX && e.stageY == originalY && s) {
-							board.container.removeChild(s.shape);
+							stage.removeChild(s.shape);
 						} else {
-							board.container.cache(0, 0, board.canvas.width, board.canvas.height);
+							if (o === null) {
+								board.container.cache(0, 0, board.canvas.width, board.canvas.height);
+								board.container.addChild(s.shape);
+								stage.removeChild(s.shape);
+								board.container.updateCache();
+							}
+
 						}
 						creating = false;
 						stage.off('stagemousemove', mousemove, false);
+						stage.off('stagemouseup', mouseup, false);
 					}
 				}
 			}, false);
@@ -448,6 +457,12 @@
 			}
 		}
 
+		function _bringToTop() {
+
+
+            board.stage.addChildAt(board.container, 0);
+		}
+
 		/** 
 		 * Public APIs.
 		 =================================================*/
@@ -467,9 +482,9 @@
 			if (s.outline) {
 				stage.removeChild(s.outline);
 			}
-            this.container.addChild(s.shape);
+			this.container.addChild(s.shape);
 			stage.removeChild(s.shape);
-            this.container.updateCache();
+			this.container.updateCache();
 			s.shape.shadow = null;
 			s.selected = false;
 			stage.update();
