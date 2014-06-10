@@ -4,7 +4,9 @@
                 this.strokeColor = conf.strokeColor;
                 this.strokeSize = conf.strokeSize;
                 this.alpha = conf.alpha;
+                this.config = conf;
                 this.handlers = [];
+                this.outline = null;
                 this.selected = false;
         }
 
@@ -15,6 +17,35 @@
                         num = stage.getNumChildren();
 
                 stage.addChildAt(z.shape, num);
+        };
+
+        Shape.prototype.drawOutline = function() {
+                var z = this;
+                var outline = this.outline;
+                if (!outline) {
+                        this.outline = new createjs.Shape();
+                        this.outline.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
+                }
+                if (!z.selected) {
+                        var stage = this.shape.getStage();
+                        var index = stage.getChildIndex(this.shape);
+                        stage.addChildAt(outline, index - 1);
+                }
+                var outlineObj = {
+                        strokeColor: '#fff',
+                        strokeSize: z.strokeSize + 6,
+                        shape: outline,
+                        bounds : z.bounds,
+                        points: z.points,
+                        startX: z.startX,
+                        startY: z.startY,
+                        endX: z.endX,
+                        endY: z.endY,
+                        type: 'outline'
+                };
+
+                this.rePaint.call(outlineObj);
+                
         };
 
         PB.Shape = Shape;

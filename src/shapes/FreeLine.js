@@ -10,8 +10,10 @@
 	PB.Utils.extend(FreeLine, PB.Shape);
 
 	FreeLine.prototype.select = function() {
+		this.drawOutline();
 		this.selected = true;
-		this.shape.shadow = new createjs.Shadow(this.strokeColor, 0, 0, 10);
+
+		//this.shape.shadow = new createjs.Shadow(this.strokeColor, 0, 0, 10);
 	};
 
 	FreeLine.prototype.rePaint = function() {

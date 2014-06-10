@@ -108,7 +108,7 @@
              s.shape.shadow = null;
              this.container.updateCache();
 
-             
+
              s.selected = false;
              stage.update();
              selectedShape = null;
@@ -334,7 +334,7 @@
 
                      s.rePaint(angle);
 
-                     //window.freeline = s;
+                     window.freeline = s;
 
                      stage.update();
                  }
@@ -345,12 +345,12 @@
                          if (e.stageX == originalX && e.stageY == originalY) {
                              container.removeChild(s);
                          } else {
-                            container.cache(0,0,board.canvas.width, board.canvas.height);
+                             container.cache(0, 0, board.canvas.width, board.canvas.height);
                          }
 
-                         
+
                          creating = false;
-                         //freeline.smooth();
+                         freeline.smooth();
                          stage.off('stagemousemove', mousemove, false);
                      }
                  }
@@ -1628,16 +1628,8 @@
          FreeLine.prototype.smooth = function() {
              var z = this;
              z.shape.graphics.clear().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor);
-             var a = z.points;
-             console.log('smooth');
-             var scale = 0.3;
-             var al = a.length;
-             var b = a[al - 1];
-             var next = a[al - 2];
-             a[al - 1] = {
-                 x: b.x * scale + next.x * (1 - scale),
-                 y: b.y * scale + next.y * (1 - scale)
-             };
+             //z.points = DouglasPeucker.getProcessPoints(z.points, 1);
+             z.points = simplify(z.points, 2, true);
              z.rePaint();
          }
 
@@ -1723,4 +1715,209 @@
      }
 
      window.paintBoard = paintBoard;
+
+     /*
+ (c) 2013, Vladimir Agafonkin
+ Simplify.js, a high-performance JS polyline simplification library
+ mourner.github.io/simplify-js
+*/
+
+     (function() {
+         'use strict';
+
+         // to suit your point format, run search/replace for '.x' and '.y';
+         // for 3D version, see 3d branch (configurability would draw significant performance overhead)
+
+         // square distance between 2 points
+         function getSqDist(p1, p2) {
+
+             var dx = p1.x - p2.x,
+                 dy = p1.y - p2.y;
+
+             return dx * dx + dy * dy;
+         }
+
+         // square distance from a point to a segment
+         function getSqSegDist(p, p1, p2) {
+
+             var x = p1.x,
+                 y = p1.y,
+                 dx = p2.x - x,
+                 dy = p2.y - y;
+
+             if (dx !== 0 || dy !== 0) {
+
+                 var t = ((p.x - x) * dx + (p.y - y) * dy) / (dx * dx + dy * dy);
+
+                 if (t > 1) {
+                     x = p2.x;
+                     y = p2.y;
+
+                 } else if (t > 0) {
+                     x += dx * t;
+                     y += dy * t;
+                 }
+             }
+
+             dx = p.x - x;
+             dy = p.y - y;
+
+             return dx * dx + dy * dy;
+         }
+         // rest of the code doesn't care about point format
+
+         // basic distance-based simplification
+         function simplifyRadialDist(points, sqTolerance) {
+
+             var prevPoint = points[0],
+                 newPoints = [prevPoint],
+                 point;
+
+             for (var i = 1, len = points.length; i < len; i++) {
+                 point = points[i];
+
+                 if (getSqDist(point, prevPoint) > sqTolerance) {
+                     newPoints.push(point);
+                     prevPoint = point;
+                 }
+             }
+
+             if (prevPoint !== point) newPoints.push(point);
+
+             return newPoints;
+         }
+
+         // simplification using optimized Douglas-Peucker algorithm with recursion elimination
+         function simplifyDouglasPeucker(points, sqTolerance) {
+
+             var len = points.length,
+                 MarkerArray = typeof Uint8Array !== 'undefined' ? Uint8Array : Array,
+                 markers = new MarkerArray(len),
+                 first = 0,
+                 last = len - 1,
+                 stack = [],
+                 newPoints = [],
+                 i, maxSqDist, sqDist, index;
+
+             markers[first] = markers[last] = 1;
+
+             while (last) {
+
+                 maxSqDist = 0;
+
+                 for (i = first + 1; i < last; i++) {
+                     sqDist = getSqSegDist(points[i], points[first], points[last]);
+
+                     if (sqDist > maxSqDist) {
+                         index = i;
+                         maxSqDist = sqDist;
+                     }
+                 }
+
+                 if (maxSqDist > sqTolerance) {
+                     markers[index] = 1;
+                     stack.push(first, index, index, last);
+                 }
+
+                 last = stack.pop();
+                 first = stack.pop();
+             }
+
+             for (i = 0; i < len; i++) {
+                 if (markers[i]) newPoints.push(points[i]);
+             }
+
+             return newPoints;
+         }
+
+         // both algorithms combined for awesome performance
+         function simplify(points, tolerance, highestQuality) {
+
+             if (points.length <= 1) return points;
+
+             var sqTolerance = tolerance !== undefined ? tolerance * tolerance : 1;
+
+             points = highestQuality ? points : simplifyRadialDist(points, sqTolerance);
+             points = simplifyDouglasPeucker(points, sqTolerance);
+
+             return points;
+         }
+
+         // export as AMD module / Node module / browser or worker variable
+         if (typeof define === 'function' && define.amd) define(function() {
+             return simplify;
+         });
+         else if (typeof module !== 'undefined') module.exports = simplify;
+         else if (typeof self !== 'undefined') self.simplify = simplify;
+         else window.simplify = simplify;
+
+     })();
+
+     var DouglasPeucker = {
+         getProcessPoints: function(points, tolerance) {
+             /// <summary>获取处理后的点</summary>
+             /// <param name="points" type="Array">包含点的数组</param>
+             /// <param name="tolerance" type="Float">取样临界值</param>
+             /// <returns type="Array" />
+             /*if (!K.isArr(points) || !points.length) {//当points不是数组或没有值时，直接返回一个空数组
+                 return [];
+             }*/
+             if (points.length < 3) return points; //小于3个点时不抽稀，因为1个或2个点无法进行抽稀
+             var firstPoint = 0,
+                 lastPoint = points.length - 1; //取开始点与结束点的下标
+             var pointIndexsToKeep = []; //保存需要点下标的数组
+             pointIndexsToKeep.push(firstPoint);
+             pointIndexsToKeep.push(lastPoint); //开始与结束不进行处理，直接保留
+             /*while (points[firstPoint] == points[lastPoint]) {//处理闭合情况，闭合时，强制断开
+                 lastPoint--;
+             }*/
+             this.reduce(points, firstPoint, lastPoint, tolerance, pointIndexsToKeep); //抽稀
+             var resultPoints = []; //返回的点数组
+             pointIndexsToKeep.sort(function(a, b) { //排序，这个可排可不排
+                 return a - b;
+             });
+             for (var i = 0; i < pointIndexsToKeep.length; i++) {
+                 resultPoints.push(points[pointIndexsToKeep[i]]);
+             }
+             return resultPoints;
+         },
+         reduce: function(points, firstPoint, lastPoint, tolerance, pointIndexsToKeep) {
+             /// <summary>抽稀处理</summary>
+             /// <param name="points" type="Array">待抽稀的数组</param>
+             /// <param name="firstPoint" type="Integer">起点</param>
+             /// <param name="lastPoint" type="Integer">终点</param>
+             /// <param name="tolerance" type="Float">取样临界值</param>
+             /// <param name="pointIndexsToKeep" type="Array">保留点下标的数组</param>
+             var maxDis = 0,
+                 idxFarthest = 0; //定义最大长度及最远点的下标
+             for (var i = firstPoint, dis; i < lastPoint; i++) {
+                 dis = this.perpendicularDistance(points[firstPoint], points[lastPoint], points[i]); //获取当前点到起点与
+                 if (dis > maxDis) { //保存最远距离
+                     maxDis = dis;
+                     idxFarthest = i;
+                 }
+             }
+             if (maxDis > tolerance && idxFarthest != 0) { //如果最远距离大于临界值
+                 pointIndexsToKeep.push(idxFarthest);
+                 this.reduce(points, firstPoint, idxFarthest, tolerance, pointIndexsToKeep);
+                 this.reduce(points, idxFarthest, lastPoint, tolerance, pointIndexsToKeep);
+             }
+         },
+         perpendicularDistance: function(beginPoint, endPoint, comparePoint) {
+             /// <summary>计算给出的comparePoint到beginPoint与endPoint组成的直线的垂直距离</summary>
+             /// <param name="beginPoint" type="Object">起始点</param>
+             /// <param name="endPoint" type="Object">结束点</param>
+             /// <param name="comparePoint" type="Object">比较点</param>
+             /// <returns type="Float" />
+             //Area = |(1/2)(x1y2 + x2y3 + x3y1 - x2y1 - x3y2 - x1y3)|   *Area of triangle
+             //Base = v((x1-x2)2+(y1-y2)2)                               *Base of Triangle*
+             //Area = .5*Base*H                                          *Solve for height
+             //Height = Area/.5/Base
+             var area = Math.abs(0.5 * (beginPoint.x * endPoint.y + endPoint.x * comparePoint.y + comparePoint.x * beginPoint.y -
+                 endPoint.x * beginPoint.y - comparePoint.x * endPoint.y - beginPoint.x * comparePoint.y));
+             var bottom = Math.sqrt(Math.pow(beginPoint.x - endPoint.x, 2) + Math.pow(beginPoint.y - endPoint.y, 2));
+             var height = area / bottom * 2;
+             return height;
+         }
+     };
  })();

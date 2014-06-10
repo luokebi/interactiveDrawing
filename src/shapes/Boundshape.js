@@ -23,9 +23,11 @@
         };
 
         BoundShape.prototype.select = function() {
+                this.drawOutline();
                 this.drawHandlers();
+
                 this.selected = true;
-                this.shape.shadow = new createjs.Shadow(this.strokeColor, 0, 0, 10);
+                //this.shape.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
         };
 
         BoundShape.prototype.drawHandlers = function() {
@@ -78,7 +80,7 @@
                                         r._type = 'handler';
                                         r.name = h.name;
                                         r.children[1].cursor = h.cursor;
-                                        r.children[0].shadow = new createjs.Shadow(PB.HANDLER_SHADOW, 0,2,1);
+                                        r.children[0].shadow = new createjs.Shadow(PB.HANDLER_SHADOW, 0, 2, 1);
                                         z.handlers[h.name] = r;
                                         var obounds = {};
                                         r.children[1].on('mousedown', function() {
@@ -139,6 +141,7 @@
 
 
                                                 z.rePaint();
+                                                z.drawOutline();
                                                 z.drawHandlers();
                                         });
 

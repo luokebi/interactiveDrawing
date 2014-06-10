@@ -9,9 +9,10 @@
     PB.Utils.extend(LineShape, PB.Shape);
 
     LineShape.prototype.select = function() {
+        this.drawOutline();
         this.drawHandlers();
         this.selected = true;
-        this.shape.shadow = new createjs.Shadow(this.strokeColor, 0, 0, 10);
+        //this.shape.shadow = new createjs.Shadow(this.strokeColor, 0, 0, 10);
     };
 
     LineShape.prototype.drawHandlers = function() {
@@ -62,6 +63,7 @@
                         z.endX = ex;
                         z.endY = ey;
                         z.rePaint();
+                        z.drawOutline();
                         z.drawHandlers();
                     });
                 }

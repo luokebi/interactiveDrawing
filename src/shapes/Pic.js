@@ -30,6 +30,8 @@
 		z.shape.hitArea.graphics.clear().beginFill("#FFF").drawRect(0, 0, z.bounds.width/z.shape.scaleX, z.bounds.height/z.shape.scaleY);
 	};
 
+	Pic.prototype.drawOutline = function() {};
+
 	Pic.prototype.select = function() {
 		this.drawHandlers();
 		this.selected = true;

@@ -14,13 +14,13 @@
 			modifyText = false,
 			selectedShape = null,
 			temp_input = document.createElement('textarea'),
-			scaleLevel = 1;
-		mouseX = 0,
-		mouseY = 0,
-		stageX = 0,
-		stageY = 0,
-		selectImage = null,
-		board = this;
+			scaleLevel = 1,
+			mouseX = 0,
+			mouseY = 0,
+			stageX = 0,
+			stageY = 0,
+			selectImage = null,
+			board = this;
 
 
 		var stage = new createjs.Stage(canvas);
@@ -125,7 +125,7 @@
 				function bindEventforShape(s) {
 					stage.addChild(s.shape);
 					var sp = s.shape;
-					if (s.subType !== 'pic' && s.subType !== 'blur') {
+					/*if (s.subType !== 'pic' && s.subType !== 'blur') {
 						sp.addEventListener('mouseover', function() {
 							//console.info('shape mouseover');
 							if (creating) {
@@ -141,7 +141,7 @@
 								sp.getStage().update();
 							}
 						}, false);
-					}
+					}*/
 
 					sp.addEventListener('mousedown', function(e) {
 						if (creating) {
@@ -200,12 +200,13 @@
 							s.endX = s.backup.endX + moveX;
 							s.endY = s.backup.endY + moveY;
 						} else if (s.baseType === 'FreeShape') {
-							s.shape.x = e.stageX + s.offset.x;
-							s.shape.y = e.stageY + s.offset.y;
+							s.shape.x = s.outline.x = e.stageX + s.offset.x;
+							s.shape.y = s.outline.y = e.stageY + s.offset.y;
 						}
 
 
 						s.rePaint();
+						s.drawOutline();
 						if (s.baseType !== "FreeShape") {
 							s.drawHandlers();
 						}
@@ -448,6 +449,10 @@
 				for (var i in s.handlers) {
 					stage.removeChild(s.handlers[i]);
 				}
+			}
+
+			if (s.outline) {
+				stage.removeChild(s.outline);
 			}
 
 			s.shape.shadow = null;
