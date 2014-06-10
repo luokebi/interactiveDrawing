@@ -25,8 +25,13 @@
 
 		var stage = new createjs.Stage(canvas);
 
+		this.canvas = document.getElementById(canvas);
+		this.stage = stage;
+		this.container = new createjs.Container();
+
 		function init() {
 			insertInput();
+			board.stage.addChild(board.container);
 			stage.enableMouseOver(10);
 			stage.on('stagemousedown', function(e) {
 				//console.info('stage mousedown', hoverShape);
@@ -114,6 +119,7 @@
 					creating = true;
 					if (selectedShape) {
 						board.unSelect();
+						return;
 					}
 
 					stage.addEventListener('stagemousemove', mousemove, false);
@@ -123,7 +129,7 @@
 				// bind event to shapes
 
 				function bindEventforShape(s) {
-					stage.addChild(s.shape);
+					board.container.addChild(s.shape);
 					var sp = s.shape;
 					/*if (s.subType !== 'pic' && s.subType !== 'blur') {
 						sp.addEventListener('mouseover', function() {
@@ -176,6 +182,9 @@
 						if (selectedShape && selectedShape.shape.id != sp.id) {
 							board.unSelect();
 						}
+						board.container.removeChild(s.shape);
+						board.stage.addChild(s.shape);
+						board.container.updateCache();
 						s.select();
 						selectedShape = s;
 					}, false);
@@ -265,7 +274,9 @@
 					//console.info('stage mouseup', stage.mouseInBounds);
 					if (stage.mouseInBounds) {
 						if (e.stageX == originalX && e.stageY == originalY && s) {
-							stage.removeChild(s.shape);
+							board.container.removeChild(s.shape);
+						} else {
+							board.container.cache(0, 0, board.canvas.width, board.canvas.height);
 						}
 						creating = false;
 						stage.off('stagemousemove', mousemove, false);
@@ -437,8 +448,10 @@
 			}
 		}
 
-		this.canvas = document.getElementById(canvas);
-		this.stage = stage;
+		/** 
+		 * Public APIs.
+		 =================================================*/
+
 
 
 		Board.prototype.unSelect = function() {
@@ -454,7 +467,9 @@
 			if (s.outline) {
 				stage.removeChild(s.outline);
 			}
-
+            this.container.addChild(s.shape);
+			stage.removeChild(s.shape);
+            this.container.updateCache();
 			s.shape.shadow = null;
 			s.selected = false;
 			stage.update();

@@ -24,6 +24,7 @@
 	PB.Arrow = Arrow;
 })(createjs, paintBoard || {});
 
+
 /** 
  * Dashed arrow.
  =================================================*/
@@ -53,6 +54,7 @@
 	PB.DashedArrow = DashedArrow;
 })(createjs, paintBoard || {});
 
+
 /** 
  * Double arrow.
  =================================================*/
@@ -77,6 +79,7 @@
 
 	PB.DoubleArrow = DoubleArrow;
 })(createjs, paintBoard || {});
+
 
 /** 
  * Double dashed arrow.
