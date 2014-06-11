@@ -27,10 +27,13 @@
 
 		this.canvas = document.getElementById(canvas);
 		this.stage = stage;
+		this.container = new createjs.Container();
 
 		function init() {
 			insertInput();
 			stage.enableMouseOver(10);
+			board.container.cache(0, 0, board.canvas.width, board.canvas.height);
+			stage.addChild(board.container);
 			stage.on('stagemousedown', function(e) {
 				//console.info('stage mousedown', hoverShape);
 				if (!shapeType) {
@@ -184,7 +187,10 @@
 						if (selectedShape && selectedShape.shape.id != sp.id) {
 							board.unSelect();
 						}
-
+						board.container.removeChild(s.shape);
+						board.stage.addChild(s.shape);
+						board.container.updateCache();
+						_bringToTop();
 						s.select();
 						selectedShape = s;
 					}, false);
@@ -272,6 +278,11 @@
 					if (stage.mouseInBounds) {
 						if (e.stageX == originalX && e.stageY == originalY && s) {
 							stage.removeChild(s.shape);
+						} else {
+
+							board.container.addChild(s.shape);
+							stage.removeChild(s.shape);
+							board.container.updateCache();
 						}
 						creating = false;
 						stage.off('stagemousemove', mousemove, false);
@@ -444,6 +455,12 @@
 			}
 		}
 
+		function _bringToTop() {
+
+
+			board.stage.addChildAt(board.container, 0);
+		}
+
 
 		/** 
 		 * Public APIs.
@@ -464,6 +481,10 @@
 			if (s.outline) {
 				stage.removeChild(s.outline);
 			}
+
+			this.container.addChild(s.shape);
+			stage.removeChild(s.shape);
+			this.container.updateCache();
 
 			s.shape.shadow = null;
 			s.selected = false;
