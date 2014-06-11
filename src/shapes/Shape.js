@@ -22,14 +22,15 @@
         Shape.prototype.drawOutline = function() {
                 var z = this;
                 if (!z.outline) {
-                        this.outline = new createjs.Shape();
-                        this.outline.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
+                        z.outline = new createjs.Shape();
+                        z.outline.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
                 }
                 if (!z.selected) {
                         var stage = this.shape.getStage();
                         var index = stage.getChildIndex(this.shape);
-                        //console.log(z.outline);
-                        stage.addChildAt(z.outline, 1);
+                        console.log("outline",index, z.outline);
+                        var oindex = index === 0 ? 0: index - 1;
+                        stage.addChildAt(z.outline, oindex);
                 }
                 var outlineObj = {
                         strokeColor: '#fff',
