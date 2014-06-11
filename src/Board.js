@@ -41,7 +41,7 @@
 		layerCanvas.width = this.canvas.width;
 		layerCanvas.height = this.canvas.height;
 		//layerCanvas.style.display = "none";
-		var layerStage = new createjs.Stage(layerCanvas);
+		var layerStage = new createjs.Stage("layer-canvas");
 		//layerStage.enableMouseOver(10);
 
 		/*layerStage.on('stagemousedown', function (e) {
@@ -57,6 +57,7 @@
 
 		var shape = mainStage.addChild(new createjs.Shape()).set({name:"square", x:100, y:100});
 			shape.graphics.beginFill('#f00').drawRect(0,0,135,135);
+			shape.cursor = 'pointer';
 
 			
 
@@ -177,13 +178,19 @@
 					var sp = s.shape;
 					if (s.subType !== 'pic' && s.subType !== 'blur') {
 						sp.addEventListener('mouseover', function() {
-							console.info('shape mouseover');
-							layerCanvas.style.cursor = "move";
+							mainStage.removeChild(s.shape);
+							stage.addChild(s.shape);
+							stage.update();
+							mainStage.update();
 							
 						});
 
 						sp.addEventListener('mouseout', function() {
-							layerCanvas.style.cursor = "";
+
+							stage.removeChild(s.shape);
+							mainStage.addChild(s.shape);
+							stage.update();
+							mainStage.update();
 						}, false);
 					}
 
@@ -222,10 +229,7 @@
 							board.unSelect();
 						}
 
-						mainStage.removeChild(s.shape);
-						stage.addChild(s.shape);
-						stage.update();
-						mainStage.update();
+						
 
 						s.select();
 						selectedShape = s;
