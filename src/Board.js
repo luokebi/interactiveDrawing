@@ -23,14 +23,56 @@
 			board = this;
 
 
-		var stage = new createjs.Stage(canvas);
+		var mainStage = new createjs.Stage(canvas);
 
 		this.canvas = document.getElementById(canvas);
-		this.stage = stage;
+		this.stage = mainStage;
+		
+		mainStage.enableDOMEvents(false);
+
+		var layerCanvas = document.createElement('canvas');
+		layerCanvas.id = "layer-canvas";
+		document.body.appendChild(layerCanvas);
+		layerCanvas.style.position = "absolute";
+		var offset = PB.Utils.getOffset(this.canvas);
+		console.log(offset);
+		layerCanvas.style.left = offset.left + 'px';
+		layerCanvas.style.top = offset.top + "px";
+		layerCanvas.width = this.canvas.width;
+		layerCanvas.height = this.canvas.height;
+		//layerCanvas.style.display = "none";
+		var layerStage = new createjs.Stage(layerCanvas);
+		//layerStage.enableMouseOver(10);
+
+		/*layerStage.on('stagemousedown', function (e) {
+			var o = layerStage.getObjectUnderPoint(e.stageX, e.stageY);
+			if (o === null) {
+				layerCanvas.style.display = 'none';
+				layerStage.removeChild(selectedShape.shape);
+				stage.addChild(selectedShape.shape);
+				layerStage.update();
+				stage.update();
+			}
+		});*/
+
+		var shape = mainStage.addChild(new createjs.Shape()).set({name:"square", x:100, y:100});
+			shape.graphics.beginFill('#f00').drawRect(0,0,135,135);
+
+			
+
+		shape.on('mouseover',function(){
+			console.log('mouseover');
+		});
+
+		var stage = layerStage;
+		
+
 
 		function init() {
 			insertInput();
 			stage.enableMouseOver(10);
+			stage.nextStage = mainStage;
+			mainStage.enableMouseOver(10);
 			stage.on('stagemousedown', function(e) {
 				//console.info('stage mousedown', hoverShape);
 				if (!shapeType) {
@@ -98,8 +140,8 @@
 								var s = new PB.Pic(config, image, e.stageX, e.stageY);
 								bindEventforShape(s);
 								stage.addChild(s.shape);
-								s.select();
-								selectedShape = s;
+								//s.select();
+								//selectedShape = s;
 								stage.update();
 							}
 							image.onload = onloadHandler;
@@ -133,28 +175,23 @@
 				function bindEventforShape(s) {
 					stage.addChild(s.shape);
 					var sp = s.shape;
-					/*if (s.subType !== 'pic' && s.subType !== 'blur') {
+					if (s.subType !== 'pic' && s.subType !== 'blur') {
 						sp.addEventListener('mouseover', function() {
-							//console.info('shape mouseover');
-							if (creating) {
-								return;
-							}
-							sp.shadow = new createjs.Shadow(s.strokeColor, 0, 0, 10);
-							sp.getStage().update();
-						}, false);
+							console.info('shape mouseover');
+							layerCanvas.style.cursor = "move";
+							
+						});
 
 						sp.addEventListener('mouseout', function() {
-							if (!s.selected) {
-								sp.shadow = null;
-								sp.getStage().update();
-							}
+							layerCanvas.style.cursor = "";
 						}, false);
-					}*/
+					}
 
 					sp.addEventListener('mousedown', function(e) {
-						if (creating) {
+						console.log('shape mousedown', s,creating);
+						/*if (creating) {
 							return;
-						}
+						}*/
 						s.bringToTop();
 						s.backup = {
 							bounds: PB.Utils.cloneObj(s.bounds),
@@ -184,6 +221,11 @@
 						if (selectedShape && selectedShape.shape.id != sp.id) {
 							board.unSelect();
 						}
+
+						mainStage.removeChild(s.shape);
+						stage.addChild(s.shape);
+						stage.update();
+						mainStage.update();
 
 						s.select();
 						selectedShape = s;
@@ -272,6 +314,11 @@
 					if (stage.mouseInBounds) {
 						if (e.stageX == originalX && e.stageY == originalY && s) {
 							stage.removeChild(s.shape);
+						} else {
+							stage.removeChild(s.shape);
+							mainStage.addChild(s.shape);
+							stage.update();
+							mainStage.update();
 						}
 						creating = false;
 						stage.off('stagemousemove', mousemove, false);
@@ -465,6 +512,9 @@
 				stage.removeChild(s.outline);
 			}
 
+			stage.removeChild(s.shape);
+			mainStage.addChild(s.shape);
+			mainStage.update();
 			s.shape.shadow = null;
 			s.selected = false;
 			stage.update();
