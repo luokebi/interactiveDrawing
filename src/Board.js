@@ -268,7 +268,7 @@
 				}
 
 				function mouseup(e) {
-					//console.info('stage mouseup', stage.mouseInBounds);
+					console.info(e.stageX == originalX && e.stageY == originalY);
 					if (stage.mouseInBounds) {
 						if (e.stageX == originalX && e.stageY == originalY && s) {
 							stage.removeChild(s.shape);
