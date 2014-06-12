@@ -24,6 +24,7 @@
                 if (!z.outline) {
                         z.outline = new createjs.Shape();
                         z.outline.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
+                        z.outline._type = 'outline';
                 }
                 if (!z.selected) {
                         var stage = this.shape.getStage();

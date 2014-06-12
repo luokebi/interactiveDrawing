@@ -20,14 +20,17 @@
 			stageX = 0,
 			stageY = 0,
 			selectImage = null,
-			board = this;
+			layerShapes = [];
+		board = this;
 
 
 		var mainStage = new createjs.Stage(canvas);
 
 		this.canvas = document.getElementById(canvas);
 		this.stage = mainStage;
-		
+
+		window.layerShapes = layerShapes;
+
 		mainStage.enableDOMEvents(false);
 
 		var layerCanvas = document.createElement('canvas');
@@ -55,7 +58,9 @@
 			}
 		});*/
 
-		var shape = mainStage.addChild(new createjs.Shape()).set({name:"square", x:100, y:100});
+		this.layerStage = layerStage;
+
+		/*var shape = mainStage.addChild(new createjs.Shape()).set({name:"square", x:100, y:100});
 			shape.graphics.beginFill('#f00').drawRect(0,0,135,135);
 			shape.cursor = 'pointer';
 
@@ -63,10 +68,10 @@
 
 		shape.on('mouseover',function(){
 			console.log('mouseover');
-		});
+		});*/
 
 		var stage = layerStage;
-		
+
 
 
 		function init() {
@@ -130,6 +135,7 @@
 					case 'pic':
 						if (o === null) {
 							if (selectedShape) {
+								clearLayer(selectedShape.shape.id);
 								board.unSelect();
 								return;
 							}
@@ -141,8 +147,8 @@
 								var s = new PB.Pic(config, image, e.stageX, e.stageY);
 								bindEventforShape(s);
 								stage.addChild(s.shape);
-								//s.select();
-								//selectedShape = s;
+								s.select();
+								selectedShape = s;
 								stage.update();
 							}
 							image.onload = onloadHandler;
@@ -159,6 +165,7 @@
 				if (o === null && shapeType !== 'pic') {
 					creating = true;
 					if (selectedShape) {
+						clearLayer(selectedShape.shape.id);
 						board.unSelect();
 						//return;
 					}
@@ -173,29 +180,53 @@
 
 				// bind event to shapes
 
+				function clearLayer(id) {
+					layerStage.children.sort(function(a, b) {
+						return a.id > b.id;
+					});
+
+					console.log(layerStage.children);
+					for (var i = 0; i < layerStage.children.length; i++) {
+						var s = layerStage.children[i];
+						if (s._type !== 'outline' && s._type !== 'handler' && s.id != id) {
+							layerStage.removeChild(s);
+							mainStage.addChild(s);
+						}
+					}
+
+					layerShapes = [];
+				}
+
 				function bindEventforShape(s) {
 					stage.addChild(s.shape);
 					var sp = s.shape;
-					if (s.subType !== 'pic' && s.subType !== 'blur') {
-						sp.addEventListener('mouseover', function() {
+
+					sp.addEventListener('mouseover', function() {
+						if (!selectedShape || selectedShape.shape.id !== s.shape.id) {
+							console.log('mouseover');
 							mainStage.removeChild(s.shape);
 							stage.addChild(s.shape);
-							stage.update();
-							mainStage.update();
-							
-						});
+							layerShapes.push(s.shape);
+							//stage.update();
+							//mainStage.update();
+						}
 
-						sp.addEventListener('mouseout', function() {
 
-							stage.removeChild(s.shape);
-							mainStage.addChild(s.shape);
-							stage.update();
-							mainStage.update();
-						}, false);
-					}
+
+					});
+
+					sp.addEventListener('mouseout', function() {
+
+						//stage.removeChild(s.shape);
+						//mainStage.addChild(s.shape);
+						//stage.update();
+						//mainStage.update();
+
+					}, false);
+
 
 					sp.addEventListener('mousedown', function(e) {
-						console.log('shape mousedown', s,creating);
+						console.log('shape mousedown', s, creating);
 						/*if (creating) {
 							return;
 						}*/
@@ -226,14 +257,17 @@
 						};
 
 						if (selectedShape && selectedShape.shape.id != sp.id) {
+							//clearLayer(selectedShape.id);
 							board.unSelect();
 						}
-
-						
+						clearLayer(sp.id);
+						mainStage.update();
 
 						s.select();
 						selectedShape = s;
 					}, false);
+
+
 
 					sp.addEventListener('pressmove', function(e) {
 						if (creating) {
@@ -515,7 +549,7 @@
 			if (s.outline) {
 				stage.removeChild(s.outline);
 			}
-
+			console.log('unSelect', s);
 			stage.removeChild(s.shape);
 			mainStage.addChild(s.shape);
 			mainStage.update();
