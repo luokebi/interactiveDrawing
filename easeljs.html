@@ -85,9 +85,9 @@
 <button class="btn btn-primary" id="on">Redo</button>
 </div>
 </div>
-<div style="position:relative; height:774px;width:1600px;margin:0 auto;">
-    <canvas id="bg" width="1600px" height="774px" class="normal"></canvas>
-	<canvas id="draw" width="1600px" height="774px" class="normal"></canvas>
+<div style="position:relative; height:1199px;width:1583px;margin:0 auto;">
+    <canvas id="bg" width="1583px" height="1199px" class="normal"></canvas>
+	<canvas id="draw" width="1583px" height="1199px" class="normal"></canvas>
 	<textarea id="temp-input"></textarea>
 </div>
 	
@@ -121,9 +121,9 @@
 	var bgCanvas = document.getElementById('bg');
 	var ctx = bgCanvas.getContext('2d');
 	var image = new Image();
-       image.src = "assets/test2.jpg";
+       image.src = "assets/test.png";
         image.onload = function() {
-                 ctx.drawImage(image, 0,0, 1600, 774);
+                 ctx.drawImage(image, 0,0, 1583, 1199);
         };
 	
 	var p = new paintBoard.Board('draw');

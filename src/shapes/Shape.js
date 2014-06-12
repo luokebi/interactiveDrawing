@@ -31,7 +31,7 @@
                         var index = stage.getChildIndex(this.shape);
                         console.log("outline",index, z.outline);
                         var oindex = index === 0 ? 0: index - 1;
-                        stage.addChildAt(z.outline, oindex);
+                        stage.addChildAt(z.outline, index);
                 }
                 var outlineObj = {
                         strokeColor: '#fff',

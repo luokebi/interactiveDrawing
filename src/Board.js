@@ -20,7 +20,7 @@
 			stageX = 0,
 			stageY = 0,
 			selectImage = null,
-			layerShapes = [];
+			isContainerUp = false;
 		board = this;
 
 
@@ -28,8 +28,11 @@
 
 		this.canvas = document.getElementById(canvas);
 		this.stage = mainStage;
+		this.container = new createjs.Container();
+		mainStage.addChild(this.container);
+		this.container.name = 'temp_container';
 
-		window.layerShapes = layerShapes;
+		//window.layerShapes = layerShapes;
 
 		mainStage.enableDOMEvents(false);
 
@@ -165,9 +168,16 @@
 				if (o === null && shapeType !== 'pic') {
 					creating = true;
 					if (selectedShape) {
-						clearLayer(selectedShape.shape.id);
+						//clearLayer(selectedShape.shape.id);
 						board.unSelect();
 						//return;
+					}
+					console.log('isContainerUp', isContainerUp);
+					if (isContainerUp) {
+						stage.removeChild(board.container);
+						mainStage.addChild(board.container);
+						mainStage.update();
+						isContainerUp = false;
 					}
 
 					if (s) {
@@ -181,11 +191,11 @@
 				// bind event to shapes
 
 				function clearLayer(id) {
-					layerStage.children.sort(function(a, b) {
+					/*layerStage.children.sort(function(a, b) {
 						return a.id > b.id;
-					});
+					});*/
 
-					console.log(layerStage.children);
+					/*console.log(layerStage.children);
 					for (var i = 0; i < layerStage.children.length; i++) {
 						var s = layerStage.children[i];
 						if (s._type !== 'outline' && s._type !== 'handler' && s.id != id) {
@@ -194,7 +204,7 @@
 						}
 					}
 
-					layerShapes = [];
+					layerShapes = [];*/
 				}
 
 				function bindEventforShape(s) {
@@ -202,11 +212,14 @@
 					var sp = s.shape;
 
 					sp.addEventListener('mouseover', function() {
+						if (creating) {
+							return;
+						}
 						if (!selectedShape || selectedShape.shape.id !== s.shape.id) {
 							console.log('mouseover');
-							mainStage.removeChild(s.shape);
-							stage.addChild(s.shape);
-							layerShapes.push(s.shape);
+							mainStage.removeChild(board.container);
+							stage.addChild(board.container);
+							isContainerUp = true;
 							//stage.update();
 							//mainStage.update();
 						}
@@ -260,10 +273,18 @@
 							//clearLayer(selectedShape.id);
 							board.unSelect();
 						}
-						clearLayer(sp.id);
+						
+						board.container.removeChild(s.shape);
+						stage.addChild(s.shape);
+						stage.removeChild(board.container);
+						mainStage.addChild(board.container);
 						mainStage.update();
+						isContainerUp = false;
+						//stage.update();
 
 						s.select();
+						stage.update();
+						//stage.update();
 						selectedShape = s;
 					}, false);
 
@@ -354,7 +375,7 @@
 							stage.removeChild(s.shape);
 						} else {
 							stage.removeChild(s.shape);
-							mainStage.addChild(s.shape);
+							board.container.addChild(s.shape);
 							stage.update();
 							mainStage.update();
 						}
@@ -551,7 +572,7 @@
 			}
 			console.log('unSelect', s);
 			stage.removeChild(s.shape);
-			mainStage.addChild(s.shape);
+			board.container.addChild(s.shape);
 			mainStage.update();
 			s.shape.shadow = null;
 			s.selected = false;
