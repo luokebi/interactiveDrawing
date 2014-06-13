@@ -1,9 +1,6 @@
 ;
 (function(createjs, PB) {
 	function Blur(conf) {
-		var image = new Image();
-		image.src = "assets/test2.jpg";
-
 		this.shape = new createjs.Bitmap(blurCanvas);
 		this.shape.cursor = 'move';
 		this.subType = 'blur';
