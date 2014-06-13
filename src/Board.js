@@ -186,6 +186,10 @@
 
 					stage.addEventListener('stagemousemove', mousemove, false);
 					stage.addEventListener('stagemouseup', mouseup, false);
+				} else if (((o.parent && o.parent._type === 'handler') || o._type === 'outline') && isContainerUp) {
+					stage.removeChild(board.container);
+					mainStage.addChild(board.container);
+					isContainerUp = false;
 				}
 
 				// bind event to shapes
@@ -273,7 +277,7 @@
 							//clearLayer(selectedShape.id);
 							board.unSelect();
 						}
-						
+
 						board.container.removeChild(s.shape);
 						stage.addChild(s.shape);
 						stage.removeChild(board.container);
@@ -364,6 +368,9 @@
 						s.endY = e.stageY;
 					}
 					s.rePaint();
+					if (s.subType === 'blur') {
+						s.drawOutline();
+					}
 
 					stage.update();
 				}
@@ -378,6 +385,11 @@
 							board.container.addChild(s.shape);
 							stage.update();
 							mainStage.update();
+						}
+
+						if (s.subType === 'blur') {
+							stage.removeChild(s.outline);
+							stage.update();
 						}
 						creating = false;
 						stage.off('stagemousemove', mousemove, false);

@@ -33,6 +33,8 @@
 	}
 
 
+
+
 </style>
 <link rel="stylesheet" href="bootstrap.min.css">
 <body>
@@ -94,6 +96,7 @@
 	</div>
 
 <!-- <script type="text/javascript" src="easeljs-0.7.1.combined.js"></script> -->
+<script type="text/javascript" src="StackBlur.js"></script>
 <script type="text/javascript" src="easeljs-NEXT.min.js"></script>
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
 <script type="text/javascript" src="bootstrap.min.js"></script>
@@ -119,11 +122,20 @@
 <!-- <script type="text/javascript" src="build/paintBoard.min.js"></script> -->
 <script type="text/javascript">
 	var bgCanvas = document.getElementById('bg');
+	var blurCanvas = document.createElement('canvas');
+	blurCanvas.id ='blur-canvas';
+	document.body.appendChild(blurCanvas);
+	blurCanvas.style.display = 'none';
+	var bCtx = blurCanvas.getContext('2d');
 	var ctx = bgCanvas.getContext('2d');
 	var image = new Image();
        image.src = "assets/test.png";
         image.onload = function() {
                  ctx.drawImage(image, 0,0, 1583, 1199);
+                 blurCanvas.width = image.width;
+                 blurCanvas.height = image.height;
+                 bCtx.drawImage(image, 0,0, 1583, 1199);
+                 stackBlurCanvasRGBA( 'blur-canvas', 0, 0,  blurCanvas.width, blurCanvas.height, 8);
         };
 	
 	var p = new paintBoard.Board('draw');
