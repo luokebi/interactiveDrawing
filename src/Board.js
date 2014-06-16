@@ -46,6 +46,7 @@
 		layerCanvas.style.top = offset.top + "px";
 		layerCanvas.width = this.canvas.width;
 		layerCanvas.height = this.canvas.height;
+		layerCanvas.classList.add('normal');
 		//layerCanvas.style.display = "none";
 		var layerStage = new createjs.Stage("layer-canvas");
 		//layerStage.enableMouseOver(10);
@@ -112,6 +113,9 @@
 						break;
 					case 'arrow':
 						var s = new PB.Arrow(config);
+						break;
+					case 'c-arrow':
+						var s = new PB.CurveArrow(config);
 						break;
 					case 'd-arrow':
 						var s = new PB.DashedArrow(config);
@@ -260,7 +264,11 @@
 							strokeColor: s.strokeColor,
 							strokeSize: s.strokeSize,
 							cx: s.calloutPointX,
-							cy: s.calloutPointY
+							cy: s.calloutPointY,
+							cpX1: s.cpX1,
+							cpY1: s.cpY1,
+							cpX2: s.cpX2,
+							cpY2: s.cpY2
 						};
 
 						s._startX = e.stageX;
@@ -313,12 +321,16 @@
 							s.startY = s.backup.startY + moveY;
 							s.endX = s.backup.endX + moveX;
 							s.endY = s.backup.endY + moveY;
+							s.cpX1 = s.backup.cpX1 + moveX;
+							s.cpY1 = s.backup.cpY1 + moveY;
+							s.cpX2 = s.backup.cpX2 + moveX;
+							s.cpY2 = s.backup.cpY2 + moveY;
 						} else if (s.baseType === 'FreeShape') {
 							s.shape.x = s.outline.x = e.stageX + s.offset.x;
 							s.shape.y = s.outline.y = e.stageY + s.offset.y;
 						}
 
-
+						console.log(s.cpX, s.cpY);
 						s.rePaint();
 						s.drawOutline();
 						if (s.baseType !== "FreeShape") {
@@ -348,6 +360,10 @@
 						s.startY = originalY;
 						s.endX = e.stageX;
 						s.endY = e.stageY;
+						s.cpX1 = s.startX + (s.endX - s.startX) * 1 / 3;
+						s.cpY1 = s.startY + (s.endY - s.startY) * 1 / 3;
+						s.cpX2 = s.startX + (s.endX - s.startX) * 2 / 3;
+						s.cpY2 = s.startY + (s.endY - s.startY) * 2 / 3;
 					} else if (s.baseType == 'FreeShape') {
 						s.points.push({
 							x: e.stageX,

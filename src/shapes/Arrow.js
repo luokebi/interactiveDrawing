@@ -26,6 +26,35 @@
 
 
 /** 
+ * Curve Arrow.
+ =================================================*/
+
+;
+(function(createjs, PB) {
+	function CurveArrow(conf) {
+		PB.Line.apply(this, arguments);
+		this.subType = 'curveArrow';
+	}
+
+	PB.Utils.extend(CurveArrow, PB.Line);
+
+	CurveArrow.prototype.rePaint = function() {
+		var z = this;
+		var angle = Math.atan2(z.endY - z.cpY2, z.endX - z.cpX2) * 180 / Math.PI;
+		if (z.type === 'outline') {
+			size = z.strokeSize * 1.5;
+		} else {
+			size = z.strokeSize * 2;
+		}
+		this.shape.graphics.clear().setStrokeStyle(z.strokeSize).beginStroke(z.strokeColor).beginFill(z.strokeColor).endStroke().drawPolyStar(z.endX, z.endY, size, 3, 0.5, angle).endStroke().endFill().setStrokeStyle(z.strokeSize, "round", "round").beginStroke(z.strokeColor).moveTo(z.startX, z.startY).bezierCurveTo(z.cpX1, z.cpY1, z.cpX2, z.cpY2, z.endX, z.endY);
+	};
+
+	PB.CurveArrow = CurveArrow;
+})(createjs, paintBoard || {});
+
+
+
+/** 
  * Dashed arrow.
  =================================================*/
 
