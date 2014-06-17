@@ -20,8 +20,8 @@
 			stageX = 0,
 			stageY = 0,
 			selectImage = null,
-			isContainerUp = false;
-		board = this;
+			isContainerUp = false,
+			board = this;
 
 
 		var mainStage = new createjs.Stage(canvas);
@@ -29,6 +29,7 @@
 		this.canvas = document.getElementById(canvas);
 		this.stage = mainStage;
 		this.container = new createjs.Container();
+		this.undoManager = new PB.UndoManager(this.stage);
 		mainStage.addChild(this.container);
 		this.container.name = 'temp_container';
 
@@ -401,6 +402,7 @@
 							board.container.addChild(s.shape);
 							stage.update();
 							mainStage.update();
+							//board.undoManager.createUndo();
 						}
 
 						if (s.subType === 'blur') {
