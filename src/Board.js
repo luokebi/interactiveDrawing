@@ -283,7 +283,6 @@
 						};
 
 						if (selectedShape && selectedShape.shape.id != sp.id) {
-							//clearLayer(selectedShape.id);
 							board.unSelect();
 						}
 
@@ -340,7 +339,19 @@
 
 						sp.getStage().update();
 					}, false);
+
+					sp.addEventListener('pressup', function() {
+						if (s.baseType === 'BoundShape') {
+							board.undoManager.createUndo('boundChange', s, s.backup.bounds, s.bounds);
+						} else if (s.baseType === 'LineShape') {
+							//board.undoManager.createUndo('lineChange', s, , )
+						} else if (s.baseType === 'FreeShape') {
+							
+						}
+						
+					});
 				}
+
 
 
 				function mousemove(e) {
@@ -393,7 +404,7 @@
 				}
 
 				function mouseup(e) {
-					//console.info('stage mouseup', stage.mouseInBounds);
+					console.info('stage mouseup', stage.mouseInBounds);
 					if (stage.mouseInBounds) {
 						if (e.stageX == originalX && e.stageY == originalY && s) {
 							stage.removeChild(s.shape);
@@ -402,7 +413,7 @@
 							board.container.addChild(s.shape);
 							stage.update();
 							mainStage.update();
-							//board.undoManager.createUndo();
+							board.undoManager.createUndo('create', s);
 						}
 
 						if (s.subType === 'blur') {
