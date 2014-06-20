@@ -77,6 +77,26 @@
 
 		var stage = layerStage;
 
+		function getInfo(s) {
+			return {
+				bounds: PB.Utils.cloneObj(s.bounds),
+				startX: s.startX,
+				startY: s.startY,
+				endX: s.endX,
+				endY: s.endY,
+				cpX1: s.cpX1,
+				cpX2: s.cpX2,
+				cpY1: s.cpY1,
+				cpY2: s.cpY2,
+				strokeColor: s.strokeColor,
+				strokeSize: s.strokeSize,
+				fontSize: s.fontSize,
+				fontFamily: s.fontFamily,
+				content: s.content,
+				points: s.points ? PB.Utils.cloneArray(s.points) : [],
+			}
+		}
+
 
 
 		function init() {
@@ -341,14 +361,7 @@
 					}, false);
 
 					sp.addEventListener('pressup', function() {
-						if (s.baseType === 'BoundShape') {
-							board.undoManager.createUndo('boundChange', s, s.backup.bounds, s.bounds);
-						} else if (s.baseType === 'LineShape') {
-							//board.undoManager.createUndo('lineChange', s, , )
-						} else if (s.baseType === 'FreeShape') {
-							
-						}
-						
+						board.undoManager.createUndo('change', s, s.backup, getInfo(s));
 					});
 				}
 
@@ -413,7 +426,7 @@
 							board.container.addChild(s.shape);
 							stage.update();
 							mainStage.update();
-							board.undoManager.createUndo('create', s);
+							//board.undoManager.createUndo('create', s);
 						}
 
 						if (s.subType === 'blur') {

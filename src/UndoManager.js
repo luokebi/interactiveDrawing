@@ -6,16 +6,24 @@
 		this.stage = stage;
 	}
 
+
 	UndoManager.prototype.createUndo = function(type, shape, oldInfo, newInfo) {
 		switch (type) {
-			case 'boundChange':
-				var command = new UndoManager.BoundChange(shape, oldInfo, newInfo);
+			case 'change':
+				var command = new UndoManager.shapeChange(shape, oldInfo, newInfo);
 				break;
 			case 'create':
 				var command = new UndoManager.shapeCreate(shape);
 				break;
+			case 'remove':
+				var command = new UndoManager.shapeRemove(shape);
+				break;
 		}
-		this.undos.push(command);
+
+		if (command) {
+			this.undos.push(command);
+		}
+
 	};
 
 	UndoManager.prototype.undo = function() {
@@ -58,44 +66,44 @@
 
 	var UM = UndoManager;
 
-	UM.BoundChange = function(s, oldInfo, newInfo) {
+	UM.shapeChange = function(s, oldInfo, newInfo) {
 		this.shape = s;
 		this.oInfo = oldInfo;
 		this.nInfo = newInfo;
 	}
 
-	UM.BoundChange.prototype = {
+	UM.shapeChange.prototype = {
+		_do: function (type) {
+			var s = this.shape,
+				o = (type === 'undo') ? this.oInfo : this.nInfo;
+			
+			if (s.baseType === 'BoundShape') {
+				s.bounds = o.bounds;
+			} else if (s.baseType === 'LineShape') {
+				s.startX = o.startX;
+				s.startY = o.startY;
+				s.endX = o.endX;
+				s.endY = o.endY;
+				s.cpX1 = o.cpX1;
+				s.cpY1 = o.cpY1;
+				s.cpX2 = o.cpX2;
+				s.cpY2 = o.cpY2;
+			} else if (s.baseType === 'FreeShape') {
+
+			}
+
+			s.strokeColor = o.strokeColor;
+			s.strokeSize = o.strokeSize;
+
+			s.rePaint();
+		},
+
 		undo: function() {
-			this.shape.bounds = this.oInfo;
-			this.shape.rePaint();
+			this._do('undo');
 		},
 
 		redo: function() {
-			this.shape.bounds = this.nInfo;
-			this.shape.rePaint();
-		}
-	};
-
-	UM.LineChange = function(s, oldInfo, newInfo) {
-		this.shape = s;
-		this.oInfo = oldInfo;
-		this.nInfo = newInfo;
-	}
-
-	UM.LineChange.prototype = {
-		undo: function() {
-			this.shape.startX = this.oInfo.startX;
-			this.shape.startY = this.oInfo.startY;
-			this.shape.cpX1 = this.oInfo.cpX1;
-			this.shape.cpY1 = this.oInfo.cpY1;
-			this.shape.cpX2 = this.oInfo.cpX2;
-			this.shape.cpY2 = this.oInfo.cpY2;
-			this.shape.rePaint();
-		},
-
-		redo: function() {
-			this.shape.bounds = this.nB;
-			this.shape.rePaint();
+			this._do('redo');
 		}
 	};
 
