@@ -88,6 +88,15 @@
                         z.rePaint();
                         z.drawOutline();
                         z.drawHandlers();
+                        z.changed = true;
+                    });
+
+                    r.children[1].on('mousedown', function() {
+                        z.backUp();
+                    });
+
+                    r.children[1].on('pressup', function() {
+                        z.undoManager.createUndo('change', z, z.backup, z.getInfo());
                     });
                 }
 
@@ -100,7 +109,7 @@
 
                 //r.children[0].graphics.clear().setStrokeStyle(1).beginStroke('#eee').lineTo(z.startX, z.startY).lineTo(z.cpX1, z.cpY1).lineTo(z.cpX2, z.cpY2).lineTo(z.endX, z.endY).endStroke();
                 r.children[0].graphics.clear().beginFill('#fff').drawCircle(h.x, h.y, 8);
-                r.children[1].graphics.clear().beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);                
+                r.children[1].graphics.clear().beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);
                 z.shape.getStage().update();
             })(i);
         }

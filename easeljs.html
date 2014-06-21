@@ -32,6 +32,14 @@
 		margin-top: 10px;
 	}
 
+	.btn-primary:active,
+	.btn-primary:focus{
+		box-shadow: none !important;
+		color: #fff !important;
+		background-color: #428bca !important;
+		border-color: #357ebd !important;
+	}
+
 
 
 
@@ -84,8 +92,8 @@
 </div>
 
 <div class="btn-group">
-<button class="btn btn-primary" id="off">Undo</button>
-<button class="btn btn-primary" id="on">Redo</button>
+<button class="btn btn-primary" id="undo">Undo</button>
+<button class="btn btn-primary" id="redo">Redo</button>
 </div>
 </div>
 <div style="position:relative; height:1199px;width:1583px;margin:0 auto;">
@@ -151,6 +159,19 @@
 
 	$('.pic').on('click', function () {
 		p.setInsertImage(this.src);
+	});
+
+	p.onUndoChange(function(canUndo, canRedo){
+		$('#undo').attr('disabled', !canUndo);
+		$('#redo').attr('disabled', !canRedo);
+	});
+
+	$('#undo').on('click', function() {
+		p.undo();
+	});
+
+	$('#redo').on('click', function() {
+		p.redo();
 	});
 </script>
 <script type="text/javascript" src="pathParser.js"></script>

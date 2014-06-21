@@ -7,21 +7,30 @@
 	}
 
 
-	UndoManager.prototype.createUndo = function(type, shape, oldInfo, newInfo) {
+	UndoManager.prototype.createUndo = function(type, shape, oldInfo, newInfo, container) {
 		switch (type) {
 			case 'change':
-				var command = new UndoManager.shapeChange(shape, oldInfo, newInfo);
+			    if (shape.changed) {
+					var command = new UndoManager.shapeChange(shape, oldInfo, newInfo);
+			    }
 				break;
 			case 'create':
-				var command = new UndoManager.shapeCreate(shape);
+				var command = new UndoManager.shapeCreate(shape, container);
 				break;
 			case 'remove':
-				var command = new UndoManager.shapeRemove(shape);
+				var command = new UndoManager.shapeRemove(shape, container);
 				break;
 		}
 
 		if (command) {
 			this.undos.push(command);
+			this.redos = [];
+			shape.changed = false;
+			console.log('createUndo');
+		}
+
+		if (this.onChangeHandler) {
+			this.onChangeHandler.call(null, this.canUndo(), this.canRedo());
 		}
 
 	};
@@ -33,9 +42,8 @@
 		var u = this.undos.pop();
 		u.undo();
 		this.redos.push(u);
-		this.stage.update();
 		if (this.onChangeHandler) {
-			this.onChangeHandler.call(null, this.canUndo, this.canRedo);
+			this.onChangeHandler.call(null, this.canUndo(), this.canRedo());
 		}
 	};
 
@@ -46,9 +54,8 @@
 		var r = this.redos.pop();
 		r.redo();
 		this.undos.push(r);
-		this.stage.update();
 		if (this.onChangeHandler) {
-			this.onChangeHandler.call(null, this.canUndo, this.canRedo);
+			this.onChangeHandler.call(UndoManager, this.canUndo(), this.canRedo());
 		}
 	};
 
@@ -73,12 +80,18 @@
 	}
 
 	UM.shapeChange.prototype = {
-		_do: function (type) {
+		_do: function(type) {
 			var s = this.shape,
 				o = (type === 'undo') ? this.oInfo : this.nInfo;
-			
+
 			if (s.baseType === 'BoundShape') {
 				s.bounds = o.bounds;
+				if (s.subType === 'pic') {
+					s.shape.x = o.x;
+					s.shape.y = o.y;
+					s.shape.scaleX = o.scaleX;
+					s.shape.scaleY = o.scaleY;
+				}
 			} else if (s.baseType === 'LineShape') {
 				s.startX = o.startX;
 				s.startY = o.startY;
@@ -89,6 +102,8 @@
 				s.cpX2 = o.cpX2;
 				s.cpY2 = o.cpY2;
 			} else if (s.baseType === 'FreeShape') {
+				s.shape.x = o.x;
+				s.shape.y = o.y;
 
 			}
 
@@ -107,9 +122,10 @@
 		}
 	};
 
-	UM.shapeCreate = function(s) {
+	UM.shapeCreate = function(s, container) {
 		this.shape = s;
-		this.container = this.shape.shape.parent;
+		this.container = container;
+		console.log(this.container);
 	};
 
 	UM.shapeCreate.prototype = {
@@ -122,9 +138,9 @@
 	};
 
 
-	UM.shapeRemove = function(s) {
+	UM.shapeRemove = function(s, container) {
 		this.shape = s;
-		this.container = this.shape.shape.parent;
+		this.container = container;
 	};
 
 	UM.shapeRemove.prototype = {

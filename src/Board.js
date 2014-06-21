@@ -88,6 +88,8 @@
 				cpX2: s.cpX2,
 				cpY1: s.cpY1,
 				cpY2: s.cpY2,
+				x: s.shape.x,
+				y: s.shape.y,
 				strokeColor: s.strokeColor,
 				strokeSize: s.strokeSize,
 				fontSize: s.fontSize,
@@ -237,6 +239,7 @@
 				}
 
 				function bindEventforShape(s) {
+					s.undoManager = board.undoManager;
 					stage.addChild(s.shape);
 					var sp = s.shape;
 
@@ -273,7 +276,8 @@
 							return;
 						}*/
 						s.bringToTop();
-						s.backup = {
+						s.backUp();
+						/*s.backup = {
 							bounds: PB.Utils.cloneObj(s.bounds),
 							points: s.points ? PB.Utils.cloneArray(s.points) : [],
 							x: s.shape.x,
@@ -290,7 +294,7 @@
 							cpY1: s.cpY1,
 							cpX2: s.cpX2,
 							cpY2: s.cpY2
-						};
+						};*/
 
 						s._startX = e.stageX;
 						s._startY = e.stageY;
@@ -350,18 +354,19 @@
 							s.shape.y = s.outline.y = e.stageY + s.offset.y;
 						}
 
-						console.log(s.cpX, s.cpY);
 						s.rePaint();
 						s.drawOutline();
 						if (s.baseType !== "FreeShape") {
 							s.drawHandlers();
 						}
 
+						s.changed = true;
+
 						sp.getStage().update();
 					}, false);
 
 					sp.addEventListener('pressup', function() {
-						board.undoManager.createUndo('change', s, s.backup, getInfo(s));
+						board.undoManager.createUndo('change', s, s.backup, s.getInfo());
 					});
 				}
 
@@ -426,7 +431,7 @@
 							board.container.addChild(s.shape);
 							stage.update();
 							mainStage.update();
-							//board.undoManager.createUndo('create', s);
+							board.undoManager.createUndo('create', s, null, null, board.container);
 						}
 
 						if (s.subType === 'blur') {
@@ -609,7 +614,30 @@
 		 * Public APIs.
 		 =================================================*/
 
+		 Board.prototype.undo = function() {
+		 	if (selectedShape) {
+		 		this.unSelect();
+		 	}
+		 	this.undoManager.undo();
+		 	this.update();
+		 };
 
+		 Board.prototype.redo = function() {
+		 	if (selectedShape) {
+		 		this.unSelect();
+		 	}
+		 	this.undoManager.redo();
+		 	this.update();
+		 };
+
+		Board.prototype.onUndoChange = function(callback) {
+			this.undoManager.onChange(callback);
+		};
+
+		Board.prototype.update = function() {
+			this.stage.update();
+		 	this.layerStage.update();
+		};
 
 		Board.prototype.unSelect = function() {
 			var s = selectedShape,
@@ -657,7 +685,9 @@
 			if (selectedShape) {
 				selectedShape.strokeColor = color;
 				selectedShape.rePaint();
-				this.stage.update();
+				selectedShape.changed = true;
+				this.undoManager.createUndo('change', selectedShape, selectedShape.backup, selectedShape.getInfo());
+				this.layerStage.update();
 			}
 			config.strokeColor = color;
 			return this;
@@ -672,7 +702,9 @@
 			if (selectedShape) {
 				selectedShape.strokeSize = size;
 				selectedShape.rePaint();
-				this.stage.update();
+				selectedShape.changed = true;
+				this.undoManager.createUndo('change', selectedShape, selectedShape.backup, selectedShape.getInfo());
+				this.layerStage.update();
 			}
 			config.strokeSize = size;
 			return this;
@@ -682,7 +714,9 @@
 			if (selectedShape) {
 				selectedShape.fontSize = size;
 				selectedShape.rePaint();
-				this.stage.update();
+				selectedShape.changed = true;
+				this.undoManager.createUndo('change', selectedShape, selectedShape.backup, selectedShape.getInfo());
+				this.layerStage.update();
 			}
 			config.fontSize = size;
 			return this;
@@ -692,7 +726,9 @@
 			if (selectedShape) {
 				selectedShape.fontFamily = f;
 				selectedShape.rePaint();
-				this.stage.update();
+				selectedShape.changed = true;
+				this.undoManager.createUndo('change', selectedShape, selectedShape.backup, selectedShape.getInfo());
+				this.layerStage.update();
 			}
 			config.fontFamily = f;
 			return this;

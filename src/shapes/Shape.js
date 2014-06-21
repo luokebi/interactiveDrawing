@@ -8,6 +8,7 @@
                 this.handlers = [];
                 this.outline = null;
                 this.selected = false;
+                this.changed = false;
         }
 
         Shape.prototype.bringToTop = function() {
@@ -17,6 +18,35 @@
                         num = stage.getNumChildren();
 
                 stage.addChildAt(z.shape, num);
+        };
+
+        Shape.prototype.getInfo = function() {
+                var s = this;
+                return {
+                        bounds: PB.Utils.cloneObj(s.bounds),
+                        startX: s.startX,
+                        startY: s.startY,
+                        endX: s.endX,
+                        endY: s.endY,
+                        cpX1: s.cpX1,
+                        cpX2: s.cpX2,
+                        cpY1: s.cpY1,
+                        cpY2: s.cpY2,
+                        x: s.shape.x,
+                        y: s.shape.y,
+                        strokeColor: s.strokeColor,
+                        strokeSize: s.strokeSize,
+                        fontSize: s.fontSize,
+                        fontFamily: s.fontFamily,
+                        content: s.content,
+                        scaleX: s.shape.scaleX,
+                        scaleY: s.shape.scaleY,
+                        points: s.points ? PB.Utils.cloneArray(s.points) : [],
+                }
+        };
+
+        Shape.prototype.backUp = function() {
+                this.backup = this.getInfo();
         };
 
         Shape.prototype.drawOutline = function() {

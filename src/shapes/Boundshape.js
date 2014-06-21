@@ -143,6 +143,15 @@
                                                 z.rePaint();
                                                 z.drawOutline();
                                                 z.drawHandlers();
+                                                z.changed = true;
+                                        });
+
+                                        r.children[1].on('mousedown', function() {
+                                                z.backUp();
+                                        });
+
+                                        r.children[1].on('pressup', function() {
+                                                z.undoManager.createUndo('change', z, z.backup, z.getInfo());
                                         });
 
                                 }
