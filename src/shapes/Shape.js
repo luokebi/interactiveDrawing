@@ -49,6 +49,16 @@
                 this.backup = this.getInfo();
         };
 
+        Shape.prototype.select = function() {
+                this.drawOutline();
+                this.drawHandlers();
+                if (this.subType === 'callout') {
+                        this.shape.shadow = null;
+                }
+
+                this.selected = true;
+        };
+
         Shape.prototype.drawOutline = function() {
                 var z = this;
                 if (!z.outline) {

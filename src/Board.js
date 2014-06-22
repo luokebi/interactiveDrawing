@@ -158,6 +158,9 @@
 					case 'free-arrow':
 						var s = new PB.FreeArrow(config);
 						break;
+					case 's-b':
+						var s = new PB.SpeechBubble(config);
+						break;
 					case 'text':
 						showInput(e.nativeEvent.pageX, e.nativeEvent.pageY, e.stageX, e.stageY);
 						creating = false;
@@ -336,9 +339,9 @@
 						if (s.baseType === 'BoundShape') {
 							var prev_bounds = s.backup.bounds;
 							s.setBounds(prev_bounds.x + moveX, prev_bounds.y + moveY, prev_bounds.width, prev_bounds.height);
-							if (s.calloutPointX) {
-								s.calloutPointX = s.backup.cx + moveX;
-								s.calloutPointY = s.backup.cy + moveY;
+							if (s.subType === 'callout') {
+								s.cpX1 = s.backup.cpX1 + moveX;
+								s.cpY1 = s.backup.cpY1 + moveY;
 							}
 						} else if (s.baseType === 'LineShape') {
 							s.startX = s.backup.startX + moveX;
@@ -368,6 +371,38 @@
 					sp.addEventListener('pressup', function() {
 						board.undoManager.createUndo('change', s, s.backup, s.getInfo());
 					});
+
+					if (s.subType === 'callout') {
+						sp.addEventListener('dblclick', function() {
+							var calloutInput = document.createElement('textarea');
+							initInput(calloutInput);
+							document.body.appendChild(calloutInput);
+							calloutInput.border = "none";
+							var offset = PB.Utils.getOffset(board.canvas);
+							var cx = s.bounds.x + s.bounds.width / 2;
+							var cy = s.bounds.y + s.bounds.height / 2;
+							var sx = -Math.sqrt(2) * s.bounds.width / 4 + cx;
+							var sy = -Math.sqrt(2) * s.bounds.height / 4 + cy;
+
+							var dx = sx + offset.left + 10;
+							var dy = sy + offset.top + 10;
+							calloutInput.style.left = dx + 'px';
+							calloutInput.style.top = dy + 'px';
+							calloutInput.style.width = Math.sqrt(2) * s.bounds.width / 2 - 20 + 'px';
+							calloutInput.style.height = Math.sqrt(2) * s.bounds.height / 2 - 20 + 'px';
+							calloutInput.style.color = '#fff';
+							calloutInput.style.fontSize = '24px';
+							calloutInput.value = s.content;
+							calloutInput.style.display = 'block';
+							calloutInput.focus();
+
+							calloutInput.addEventListener('blur', function() {
+								s.content = this.value;
+								this.parentNode.removeChild(this);
+
+							});
+						});
+					}
 				}
 
 
@@ -382,8 +417,8 @@
 						s.bounds.x = Math.min(originalX, e.stageX);
 						s.bounds.y = Math.min(originalY, e.stageY);
 						if (s.subType == 'callout') {
-							s.calloutPointX = s.bounds.x + 10;
-							s.calloutPointY = s.bounds.y + s.bounds.height + 20;
+							s.cpX1 = s.bounds.x + 10;
+							s.cpY1 = s.bounds.y + s.bounds.height + 20;
 						}
 					} else if (s.baseType == 'LineShape') {
 						s.startX = originalX;
@@ -445,16 +480,20 @@
 				}
 			}, false);
 
+			function initInput(input) {
+				input.style.position = 'absolute';
+				input.style.display = 'none';
+				input.style.border = '1px dashed #f00';
+				input.style.outline = 'none';
+				input.style.padding = 0;
+				input.style.resize = 'none';
+				input.style.backgroundColor = 'transparent';
+				input.style.overflow = 'hidden';
+			}
+
 			function insertInput() {
 				temp_input.id = 'temp_input';
-				temp_input.style.position = 'absolute';
-				temp_input.style.display = 'none';
-				temp_input.style.border = '1px dashed #f00';
-				temp_input.style.outline = 'none';
-				temp_input.style.padding = 0;
-				temp_input.style.resize = 'none';
-				temp_input.style.backgroundColor = 'transparent';
-				temp_input.style.overflow = 'hidden';
+				initInput(temp_input);
 				temp_input.style.color = config.strokeColor;
 				temp_input.style.fontSize = config.fontSize;
 				temp_input.style.fontFamily = config.fontFamily;
@@ -614,21 +653,21 @@
 		 * Public APIs.
 		 =================================================*/
 
-		 Board.prototype.undo = function() {
-		 	if (selectedShape) {
-		 		this.unSelect();
-		 	}
-		 	this.undoManager.undo();
-		 	this.update();
-		 };
+		Board.prototype.undo = function() {
+			if (selectedShape) {
+				this.unSelect();
+			}
+			this.undoManager.undo();
+			this.update();
+		};
 
-		 Board.prototype.redo = function() {
-		 	if (selectedShape) {
-		 		this.unSelect();
-		 	}
-		 	this.undoManager.redo();
-		 	this.update();
-		 };
+		Board.prototype.redo = function() {
+			if (selectedShape) {
+				this.unSelect();
+			}
+			this.undoManager.redo();
+			this.update();
+		};
 
 		Board.prototype.onUndoChange = function(callback) {
 			this.undoManager.onChange(callback);
@@ -636,7 +675,7 @@
 
 		Board.prototype.update = function() {
 			this.stage.update();
-		 	this.layerStage.update();
+			this.layerStage.update();
 		};
 
 		Board.prototype.unSelect = function() {
@@ -656,9 +695,11 @@
 			stage.removeChild(s.shape);
 			board.container.addChild(s.shape);
 			mainStage.update();
-			s.shape.shadow = null;
+			if (s.subType === 'callout') {
+				s.shape.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
+			}
 			s.selected = false;
-			stage.update();
+			this.update();
 			selectedShape = null;
 		};
 

@@ -22,13 +22,6 @@
                 };
         };
 
-        BoundShape.prototype.select = function() {
-                this.drawOutline();
-                this.drawHandlers();
-
-                this.selected = true;
-                //this.shape.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
-        };
 
         BoundShape.prototype.drawHandlers = function() {
                 var z = this,
@@ -59,12 +52,12 @@
                                 y: y + h
                         }];
 
-                if (z.subType == 'callout') {
+                if (z.subType === 'callout') {
                         handlers.push({
                                 name: 'cp',
                                 cursor: 'move',
-                                x: z.calloutPointX,
-                                y: z.calloutPointY
+                                x: z.cpX1,
+                                y: z.cpY1
                         });
                 }
 
@@ -112,10 +105,10 @@
                                                         rw = Math.abs(e.stageX - obounds.x);
                                                         rh = Math.abs(obounds.y - e.stageY + obounds.height);
                                                 } else if (r.name == 'cp') {
-                                                        z.calloutPointX = e.stageX;
-                                                        z.calloutPointY = e.stageY;
-                                                        var a = z.calloutPointX - (z.bounds.x + z.bounds.width / 2);
-                                                        var b = z.calloutPointY - (z.bounds.y + z.bounds.height / 2);
+                                                        z.cpX1 = e.stageX;
+                                                        z.cpY1 = e.stageY;
+                                                        var a = z.cpX1 - (z.bounds.x + z.bounds.width / 2);
+                                                        var b = z.cpY1 - (z.bounds.y + z.bounds.height / 2);
 
                                                         var angle = Math.atan(z.bounds.height / z.bounds.width * Math.abs(a / b));
                                                         if (a >= 0 && b >= 0) {
@@ -163,11 +156,10 @@
                                         y: h.y
                                 }
                                 if (r.name == 'cp') {
-                                        r.graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('yellow').drawCircle(h.x, h.y, 4);
+                                        r.children[1].graphics.clear().setStrokeStyle(1).beginStroke('#000').beginFill('yellow').drawCircle(h.x, h.y, 4);
                                 } else {
                                         r.children[0].graphics.clear().beginFill('#fff').drawCircle(h.x, h.y, 8);
                                         r.children[1].graphics.clear().beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);
-                                        //r.graphics.clear().setStrokeStyle(1).beginStroke('#fff').beginFill(PB.HANDLER_FILL_COLOR).drawCircle(h.x, h.y, 6);
                                 }
 
                                 z.shape.getStage().update();
