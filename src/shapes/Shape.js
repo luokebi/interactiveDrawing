@@ -53,7 +53,7 @@
                 this.drawOutline();
                 this.drawHandlers();
                 if (this.subType === 'callout') {
-                        this.shape.shadow = null;
+                        this.bubble.shadow = null;
                 }
 
                 this.selected = true;

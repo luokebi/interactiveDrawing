@@ -375,6 +375,7 @@
 					if (s.subType === 'callout') {
 						sp.addEventListener('dblclick', function() {
 							var calloutInput = document.createElement('textarea');
+							calloutInput.id = 'calloutInput';
 							initInput(calloutInput);
 							document.body.appendChild(calloutInput);
 							calloutInput.border = "none";
@@ -392,13 +393,21 @@
 							calloutInput.style.height = Math.sqrt(2) * s.bounds.height / 2 - 20 + 'px';
 							calloutInput.style.color = '#fff';
 							calloutInput.style.fontSize = '24px';
-							calloutInput.value = s.content;
+							
 							calloutInput.style.display = 'block';
-							calloutInput.focus();
+							setTimeout(function() {
+								calloutInput.focus();
+								calloutInput.value = s.content;
+							},10);
+							s.text.text = '';
+							board.layerStage.update();
 
 							calloutInput.addEventListener('blur', function() {
 								s.content = this.value;
+								s.text.text = s.content;
+								s.rePaint();
 								this.parentNode.removeChild(this);
+								board.layerStage.update();
 
 							});
 						});
@@ -696,7 +705,12 @@
 			board.container.addChild(s.shape);
 			mainStage.update();
 			if (s.subType === 'callout') {
-				s.shape.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
+				s.bubble.shadow = new createjs.Shadow('rgba(0,0,0,.4)', 0, 3, 4);
+				/*if (document.getElementById('calloutInput')) {
+					document.getElementById('calloutInput').blur();
+				}*/
+				
+
 			}
 			s.selected = false;
 			this.update();
