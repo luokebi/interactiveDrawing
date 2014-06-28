@@ -9,6 +9,7 @@ var srcs = [
 
 	// core
 	"src/bootstrap.js",
+	"src/UndoManager.js",
 	"src/Board.js",
 	"src/Utils.js",
 
@@ -17,7 +18,6 @@ var srcs = [
 	"src/shapes/BoundShape.js",
 	"src/shapes/LineShape.js",
 	"src/shapes/Rect.js",
-	"src/shapes/RoundRect.js",
 	"src/shapes/Ellipse.js",
 	"src/shapes/Line.js",
 	"src/shapes/Arrow.js",
@@ -25,7 +25,8 @@ var srcs = [
 	"src/shapes/FreeArrow.js",
 	"src/shapes/Text.js",
 	"src/shapes/Pic.js",
-	"src/shapes/Blur.js"
+	"src/shapes/Blur.js",
+	"src/shapes/SpeechBubble.js"
 
 ];
 
